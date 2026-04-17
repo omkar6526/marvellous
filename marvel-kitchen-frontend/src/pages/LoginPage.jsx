@@ -1,5 +1,5 @@
-// LoginPage.jsx
-import React, { useState } from 'react';
+// src/pages/LoginPage.jsx
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../services/api';
 import toast from 'react-hot-toast';
@@ -11,12 +11,28 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
+    // Check if already logged in
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        
+        if (token) {
+            if (role === 'ADMIN') {
+                window.location.href = '/admin/dashboard';
+            } else {
+                navigate('/');
+            }
+        }
+    }, [navigate]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        
         try {
             const { data } = await login(email, password);
             
+            // Save to localStorage
             localStorage.setItem('token', data.token);
             localStorage.setItem('name', data.name);
             localStorage.setItem('email', data.email);
@@ -27,13 +43,16 @@ const LoginPage = () => {
             
             toast.success(`Welcome back, ${data.name}! 🎉`);
             
-            // ✅ ROLE-BASED REDIRECT - FIXED
+            // Role-based redirect with force reload
             if (data.role === 'ADMIN') {
-                navigate('/admin/dashboard');
+                // Force hard redirect for admin
+                window.location.href = '/admin/dashboard';
             } else {
                 navigate('/');
             }
+            
         } catch (error) {
+            console.error('Login error:', error);
             toast.error(error.response?.data || 'Invalid email or password');
         } finally {
             setLoading(false);
@@ -119,7 +138,8 @@ const LoginPage = () => {
                                 border: '2px solid #e5e7eb',
                                 borderRadius: '12px',
                                 padding: '0 15px',
-                                transition: 'all 0.3s'
+                                transition: 'all 0.3s',
+                                backgroundColor: '#f9fafb'
                             }}>
                                 <span style={{ fontSize: '20px', marginRight: '10px' }}>📧</span>
                                 <input
@@ -132,7 +152,8 @@ const LoginPage = () => {
                                         padding: '14px 0',
                                         border: 'none',
                                         outline: 'none',
-                                        fontSize: '15px'
+                                        fontSize: '15px',
+                                        backgroundColor: 'transparent'
                                     }}
                                     placeholder="Enter your email"
                                 />
@@ -154,7 +175,8 @@ const LoginPage = () => {
                                 border: '2px solid #e5e7eb',
                                 borderRadius: '12px',
                                 padding: '0 15px',
-                                transition: 'all 0.3s'
+                                transition: 'all 0.3s',
+                                backgroundColor: '#f9fafb'
                             }}>
                                 <span style={{ fontSize: '20px', marginRight: '10px' }}>🔒</span>
                                 <input
@@ -167,7 +189,8 @@ const LoginPage = () => {
                                         padding: '14px 0',
                                         border: 'none',
                                         outline: 'none',
-                                        fontSize: '15px'
+                                        fontSize: '15px',
+                                        backgroundColor: 'transparent'
                                     }}
                                     placeholder="Enter your password"
                                 />
@@ -178,7 +201,8 @@ const LoginPage = () => {
                                         background: 'none',
                                         border: 'none',
                                         cursor: 'pointer',
-                                        fontSize: '18px'
+                                        fontSize: '18px',
+                                        padding: '5px'
                                     }}
                                 >
                                     {showPassword ? '👁️' : '👁️‍🗨️'}
@@ -199,20 +223,46 @@ const LoginPage = () => {
                                 fontSize: '16px',
                                 fontWeight: 'bold',
                                 cursor: 'pointer',
-                                transition: 'transform 0.2s',
-                                opacity: loading ? 0.7 : 1
+                                transition: 'transform 0.2s, opacity 0.2s',
+                                opacity: loading ? 0.7 : 1,
+                                transform: loading ? 'none' : 'scale(1)'
                             }}
-                            onMouseEnter={(e) => !loading && (e.target.style.transform = 'scale(1.02)')}
-                            onMouseLeave={(e) => !loading && (e.target.style.transform = 'scale(1)')}
+                            onMouseEnter={(e) => {
+                                if (!loading) e.target.style.transform = 'scale(1.02)';
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!loading) e.target.style.transform = 'scale(1)';
+                            }}
                         >
-                            {loading ? 'Logging in...' : 'Login'}
+                            {loading ? (
+                                <span>⏳ Logging in...</span>
+                            ) : (
+                                <span>🔐 Login</span>
+                            )}
                         </button>
                     </form>
 
+                    {/* Demo Credentials */}
                     <div style={{
-                        marginTop: '20px',
+                        marginTop: '25px',
+                        padding: '15px',
+                        backgroundColor: '#f3f4f6',
+                        borderRadius: '10px',
+                        textAlign: 'center'
+                    }}>
+                        <p style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
+                            <strong>Demo Credentials:</strong>
+                        </p>
+                        <div style={{ fontSize: '11px', color: '#888' }}>
+                            <div>👤 User: user@test.com / password</div>
+                            <div>👨‍💼 Admin: admin@marvelkitchen.com / admin123</div>
+                        </div>
+                    </div>
+
+                    <div style={{
+                        marginTop: '15px',
                         textAlign: 'center',
-                        fontSize: '14px',
+                        fontSize: '13px',
                         color: '#666'
                     }}>
                         <Link to="/forgot-password" style={{ color: '#667eea', textDecoration: 'none' }}>

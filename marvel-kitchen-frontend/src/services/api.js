@@ -40,4 +40,24 @@ export const getMyOrders = () => api.get('/orders/myorders');
 export const getUserProfile = () => api.get('/user/profile');
 export const updateUserProfile = (userData) => api.put('/user/profile', userData);
 
+
+
+//-------------------------------------Admin APIs-------------------------------------//
+// Admin APIs
+export const getAdminStats = () => api.get('/admin/stats');
+export const getAllOrders = () => api.get('/admin/orders');
+
+export const updateOrderStatus = (orderId, status) => 
+    api.put(`/admin/orders/${orderId}/status?status=${status}`);
+export const getAllProducts = () => api.get('/admin/products');
+
+export const addProduct = (productData) => api.post('/admin/products', productData);
+export const updateProduct = (productId, productData) => 
+    api.put(`/admin/products/${productId}`, productData);
+
+export const deleteProduct = (productId) => api.delete(`/admin/products/${productId}`);
+export const getAllUsers = () => api.get('/admin/users');
+
+export const getUserOrders = (userId) => api.get(`/admin/users/${userId}/orders`);
+
 export default api;
