@@ -1,0 +1,147 @@
+package com.marvelkitchen.service;
+
+import com.marvelkitchen.entity.*;
+import com.marvelkitchen.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+@Service
+public class OrderService {
+    
+    @Autowired
+    private OrderRepository orderRepository;
+    
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+    
+    @Autowired
+    private CartItemRepository cartItemRepository;
+    
+    @Autowired
+    private UserService userService;
+    
+    @Autowired
+    private ProductService productService;
+    
+    // Place new order
+    @Transactional
+    public Order placeOrder(Long userId, String deliveryAddress, String phoneNumber, String paymentMethod) {
+        User user = userService.findById(userId);
+        
+        // Get user's cart items
+        List<CartItem> cartItems = cartItemRepository.findByUser(user);
+        
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException("Cart is empty!");
+        }
+        
+        // Create order
+        Order order = new Order();
+        order.setUser(user);
+        order.setDeliveryAddress(deliveryAddress);
+        order.setPhoneNumber(phoneNumber);
+        order.setPaymentMethod(Order.PaymentMethod.valueOf(paymentMethod));
+        
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        
+        // Add items to order
+        for (CartItem cartItem : cartItems) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProduct(cartItem.getProduct());
+            orderItem.setProductName(cartItem.getProduct().getName());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(cartItem.getProduct().getPrice());
+            
+            order.getItems().add(orderItem);
+            
+            totalAmount = totalAmount.add(cartItem.getProduct().getPrice()
+                .multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+        }
+        
+        // Calculate totals
+        order.setTotalAmount(totalAmount);
+        
+        BigDecimal deliveryCharge = totalAmount.compareTo(BigDecimal.valueOf(200)) > 0 ? 
+            BigDecimal.ZERO : BigDecimal.valueOf(40);
+        order.setDeliveryCharge(deliveryCharge);
+        
+        BigDecimal tax = totalAmount.multiply(BigDecimal.valueOf(0.05));
+        order.setTax(tax);
+        
+        BigDecimal grandTotal = totalAmount.add(deliveryCharge).add(tax);
+        order.setGrandTotal(grandTotal);
+        
+        // Save order
+        Order savedOrder = orderRepository.save(order);
+        
+        // Clear user's cart
+        cartItemRepository.deleteByUser(user);
+        
+        return savedOrder;
+    }
+    
+    // Get user's orders
+    public List<Order> getUserOrders(Long userId) {
+        User user = userService.findById(userId);
+        return orderRepository.findByUserOrderByOrderedAtDesc(user);
+    }
+    
+    // Get order details
+    public Order getOrderDetails(Long orderId, Long userId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Order not found!"));
+        
+        // Check if order belongs to user or user is admin
+        if (!order.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Unauthorized access!");
+        }
+        
+        return order;
+    }
+    
+    // Update order status (Admin)
+    public Order updateOrderStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Order not found!"));
+        
+        order.setStatus(Order.OrderStatus.valueOf(status));
+        
+        if (status.equals("DELIVERED")) {
+            order.setDeliveredAt(LocalDateTime.now());
+        }
+        
+        return orderRepository.save(order);
+    }
+    
+    // Get all orders (Admin)
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+    
+    // Get pending orders (Admin)
+    public List<Order> getPendingOrders() {
+        return orderRepository.findByStatus(Order.OrderStatus.PENDING);
+    }
+    
+    // Get dashboard statistics (Admin)
+    public Map<String, Object> getDashboardStats() {
+        Map<String, Object> stats = new HashMap<>();
+        
+        stats.put("totalOrders", orderRepository.count());
+        stats.put("pendingOrders", orderRepository.countByStatus(Order.OrderStatus.PENDING));
+        stats.put("totalRevenue", orderRepository.getTotalRevenue() != null ? 
+            orderRepository.getTotalRevenue() : 0.0);
+        stats.put("todayRevenue", orderRepository.getTodayRevenue() != null ? 
+            orderRepository.getTodayRevenue() : 0.0);
+        stats.put("todayOrders", orderRepository.findTodayOrders().size());
+        
+        return stats;
+    }
+}
