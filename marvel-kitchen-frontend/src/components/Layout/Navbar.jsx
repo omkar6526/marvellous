@@ -1,10 +1,9 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
-    const navigate = useNavigate();
     const { cartItems } = useCart();
     const isLoggedIn = localStorage.getItem('token');
     const userName = localStorage.getItem('name');
@@ -13,7 +12,9 @@ const Navbar = () => {
     const handleLogout = () => {
         localStorage.clear();
         toast.success('Logged out successfully!');
-        navigate('/login');
+        
+        // ✅ FULL PAGE REFRESH - Force reload to login page
+        window.location.href = '/login';
     };
 
     const cartCount = cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;

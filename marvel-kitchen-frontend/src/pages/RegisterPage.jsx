@@ -48,7 +48,10 @@ const RegisterPage = () => {
                 address: formData.address
             });
             toast.success('Registration successful! Please login. 🎉');
-            navigate('/login');
+            
+            // ✅ FULL PAGE REFRESH - Force reload to login page
+            window.location.href = '/login';
+            
         } catch (error) {
             toast.error(error.response?.data || 'Registration failed');
         } finally {
@@ -59,7 +62,7 @@ const RegisterPage = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: '#0f0f23',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -69,10 +72,11 @@ const RegisterPage = () => {
                 display: 'flex',
                 maxWidth: '1100px',
                 width: '100%',
-                backgroundColor: 'white',
+                background: '#1a1a3e',
                 borderRadius: '30px',
                 overflow: 'hidden',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+                boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+                border: '1px solid rgba(102, 126, 234, 0.2)'
             }}>
                 {/* Left Side - Illustration */}
                 <div style={{
@@ -110,15 +114,21 @@ const RegisterPage = () => {
                 <div style={{
                     flex: 1,
                     padding: '40px',
-                    backgroundColor: 'white',
+                    background: '#1a1a3e',
                     maxHeight: '600px',
                     overflowY: 'auto'
                 }}>
                     <div style={{ marginBottom: '25px' }}>
-                        <h2 style={{ fontSize: '28px', color: '#333', marginBottom: '8px' }}>
+                        <h2 style={{
+                            fontSize: '28px',
+                            marginBottom: '8px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}>
                             Create Account
                         </h2>
-                        <p style={{ color: '#666' }}>Fill in your details to get started</p>
+                        <p style={{ color: '#a0a0c0' }}>Fill in your details to get started</p>
                     </div>
 
                     <form onSubmit={handleSubmit}>
@@ -126,7 +136,7 @@ const RegisterPage = () => {
                             <label style={{
                                 display: 'block',
                                 marginBottom: '6px',
-                                color: '#333',
+                                color: '#c0c0e0',
                                 fontWeight: '500',
                                 fontSize: '14px'
                             }}>
@@ -135,7 +145,8 @@ const RegisterPage = () => {
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                border: '2px solid #e5e7eb',
+                                background: '#2a2a5e',
+                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                 borderRadius: '10px',
                                 padding: '0 12px',
                                 transition: 'all 0.3s'
@@ -152,7 +163,9 @@ const RegisterPage = () => {
                                         padding: '12px 0',
                                         border: 'none',
                                         outline: 'none',
-                                        fontSize: '14px'
+                                        fontSize: '14px',
+                                        background: 'transparent',
+                                        color: 'white'
                                     }}
                                     placeholder="Enter your full name"
                                 />
@@ -163,7 +176,7 @@ const RegisterPage = () => {
                             <label style={{
                                 display: 'block',
                                 marginBottom: '6px',
-                                color: '#333',
+                                color: '#c0c0e0',
                                 fontWeight: '500',
                                 fontSize: '14px'
                             }}>
@@ -172,7 +185,8 @@ const RegisterPage = () => {
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                border: '2px solid #e5e7eb',
+                                background: '#2a2a5e',
+                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                 borderRadius: '10px',
                                 padding: '0 12px'
                             }}>
@@ -188,7 +202,9 @@ const RegisterPage = () => {
                                         padding: '12px 0',
                                         border: 'none',
                                         outline: 'none',
-                                        fontSize: '14px'
+                                        fontSize: '14px',
+                                        background: 'transparent',
+                                        color: 'white'
                                     }}
                                     placeholder="Enter your email"
                                 />
@@ -199,7 +215,7 @@ const RegisterPage = () => {
                             <label style={{
                                 display: 'block',
                                 marginBottom: '6px',
-                                color: '#333',
+                                color: '#c0c0e0',
                                 fontWeight: '500',
                                 fontSize: '14px'
                             }}>
@@ -208,7 +224,8 @@ const RegisterPage = () => {
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                border: '2px solid #e5e7eb',
+                                background: '#2a2a5e',
+                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                 borderRadius: '10px',
                                 padding: '0 12px'
                             }}>
@@ -224,7 +241,9 @@ const RegisterPage = () => {
                                         padding: '12px 0',
                                         border: 'none',
                                         outline: 'none',
-                                        fontSize: '14px'
+                                        fontSize: '14px',
+                                        background: 'transparent',
+                                        color: 'white'
                                     }}
                                     placeholder="Min 6 characters"
                                 />
@@ -235,7 +254,8 @@ const RegisterPage = () => {
                                         background: 'none',
                                         border: 'none',
                                         cursor: 'pointer',
-                                        fontSize: '16px'
+                                        fontSize: '16px',
+                                        color: '#a0a0c0'
                                     }}
                                 >
                                     {showPassword ? '👁️' : '👁️‍🗨️'}
@@ -247,7 +267,7 @@ const RegisterPage = () => {
                             <label style={{
                                 display: 'block',
                                 marginBottom: '6px',
-                                color: '#333',
+                                color: '#c0c0e0',
                                 fontWeight: '500',
                                 fontSize: '14px'
                             }}>
@@ -256,7 +276,8 @@ const RegisterPage = () => {
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                border: '2px solid #e5e7eb',
+                                background: '#2a2a5e',
+                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                 borderRadius: '10px',
                                 padding: '0 12px'
                             }}>
@@ -272,7 +293,9 @@ const RegisterPage = () => {
                                         padding: '12px 0',
                                         border: 'none',
                                         outline: 'none',
-                                        fontSize: '14px'
+                                        fontSize: '14px',
+                                        background: 'transparent',
+                                        color: 'white'
                                     }}
                                     placeholder="Confirm your password"
                                 />
@@ -283,7 +306,8 @@ const RegisterPage = () => {
                                         background: 'none',
                                         border: 'none',
                                         cursor: 'pointer',
-                                        fontSize: '16px'
+                                        fontSize: '16px',
+                                        color: '#a0a0c0'
                                     }}
                                 >
                                     {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
@@ -295,7 +319,7 @@ const RegisterPage = () => {
                             <label style={{
                                 display: 'block',
                                 marginBottom: '6px',
-                                color: '#333',
+                                color: '#c0c0e0',
                                 fontWeight: '500',
                                 fontSize: '14px'
                             }}>
@@ -304,7 +328,8 @@ const RegisterPage = () => {
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                border: '2px solid #e5e7eb',
+                                background: '#2a2a5e',
+                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                 borderRadius: '10px',
                                 padding: '0 12px'
                             }}>
@@ -319,7 +344,9 @@ const RegisterPage = () => {
                                         padding: '12px 0',
                                         border: 'none',
                                         outline: 'none',
-                                        fontSize: '14px'
+                                        fontSize: '14px',
+                                        background: 'transparent',
+                                        color: 'white'
                                     }}
                                     placeholder="Enter your phone number"
                                 />
@@ -330,14 +357,15 @@ const RegisterPage = () => {
                             <label style={{
                                 display: 'block',
                                 marginBottom: '6px',
-                                color: '#333',
+                                color: '#c0c0e0',
                                 fontWeight: '500',
                                 fontSize: '14px'
                             }}>
                                 Delivery Address
                             </label>
                             <div style={{
-                                border: '2px solid #e5e7eb',
+                                background: '#2a2a5e',
+                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                 borderRadius: '10px',
                                 padding: '0 12px'
                             }}>
@@ -352,7 +380,9 @@ const RegisterPage = () => {
                                         border: 'none',
                                         outline: 'none',
                                         fontSize: '14px',
-                                        resize: 'vertical'
+                                        resize: 'vertical',
+                                        background: 'transparent',
+                                        color: 'white'
                                     }}
                                     placeholder="Enter your delivery address"
                                 />
@@ -365,18 +395,18 @@ const RegisterPage = () => {
                             style={{
                                 width: '100%',
                                 padding: '14px',
-                                backgroundColor: '#667eea',
+                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '12px',
                                 fontSize: '16px',
                                 fontWeight: 'bold',
                                 cursor: 'pointer',
-                                transition: 'transform 0.2s',
+                                transition: 'transform 0.2s, opacity 0.2s',
                                 opacity: loading ? 0.7 : 1
                             }}
-                            onMouseEnter={(e) => !loading && (e.target.style.transform = 'scale(1.02)')}
-                            onMouseLeave={(e) => !loading && (e.target.style.transform = 'scale(1)')}
+                            onMouseEnter={(e) => !loading && (e.target.style.transform = 'translateY(-2px)')}
+                            onMouseLeave={(e) => !loading && (e.target.style.transform = 'translateY(0)')}
                         >
                             {loading ? 'Creating Account...' : 'Create Account'}
                         </button>
@@ -386,7 +416,7 @@ const RegisterPage = () => {
                         textAlign: 'center',
                         marginTop: '20px',
                         fontSize: '12px',
-                        color: '#999'
+                        color: '#a0a0c0'
                     }}>
                         By signing up, you agree to our Terms of Service and Privacy Policy
                     </p>

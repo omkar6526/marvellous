@@ -22,20 +22,16 @@ public class Order {
     
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnoreProperties({"orders", "password", "cart"})  // ← Add this
+    @JsonIgnoreProperties({"orders", "password", "cart"})
     private User user;
     
-    // FIXED: Added mappedBy and removed EAGER fetch
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties("order")  // ← Add this to avoid circular reference
+    @JsonIgnoreProperties("order")
     private List<OrderItem> items = new ArrayList<>();
     
     private BigDecimal totalAmount;
-    
     private BigDecimal deliveryCharge = BigDecimal.ZERO;
-    
     private BigDecimal tax = BigDecimal.ZERO;
-    
     private BigDecimal grandTotal;
     
     @Enumerated(EnumType.STRING)
@@ -48,17 +44,19 @@ public class Order {
     private String deliveryAddress;
     
     private String phoneNumber;
-    
     private LocalDateTime orderedAt = LocalDateTime.now();
-    
     private LocalDateTime deliveredAt;
     
     public enum OrderStatus {
         PENDING, CONFIRMED, PREPARING, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
     }
     
+    // ✅ FIX: Add RAZORPAY here
     public enum PaymentMethod {
-        COD, CARD, UPI
+        COD, 
+        CARD, 
+        UPI,
+        RAZORPAY   // 👈 ADD THIS LINE
     }
 
     // Helper method to add item
@@ -73,7 +71,7 @@ public class Order {
         item.setOrder(null);
     }
     
-    // Getters and Setters (Lombok @Data already provides, but if not working add manually)
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     
@@ -115,6 +113,4 @@ public class Order {
     
     public LocalDateTime getDeliveredAt() { return deliveredAt; }
     public void setDeliveredAt(LocalDateTime deliveredAt) { this.deliveredAt = deliveredAt; }
-    
-    
 }

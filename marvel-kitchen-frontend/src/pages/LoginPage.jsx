@@ -20,10 +20,10 @@ const LoginPage = () => {
             if (role === 'ADMIN') {
                 window.location.href = '/admin/dashboard';
             } else {
-                navigate('/');
+                window.location.href = '/';  // ✅ Full refresh for user also
             }
         }
-    }, [navigate]);
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -32,7 +32,6 @@ const LoginPage = () => {
         try {
             const { data } = await login(email, password);
             
-            // Save to localStorage
             localStorage.setItem('token', data.token);
             localStorage.setItem('name', data.name);
             localStorage.setItem('email', data.email);
@@ -43,12 +42,11 @@ const LoginPage = () => {
             
             toast.success(`Welcome back, ${data.name}! 🎉`);
             
-            // Role-based redirect with force reload
+            // ✅ FULL PAGE REFRESH - Force reload for both admin and user
             if (data.role === 'ADMIN') {
-                // Force hard redirect for admin
                 window.location.href = '/admin/dashboard';
             } else {
-                navigate('/');
+                window.location.href = '/';
             }
             
         } catch (error) {
@@ -62,7 +60,7 @@ const LoginPage = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: '#0f0f23',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -72,10 +70,11 @@ const LoginPage = () => {
                 display: 'flex',
                 maxWidth: '1000px',
                 width: '100%',
-                backgroundColor: 'white',
+                background: '#1a1a3e',
                 borderRadius: '30px',
                 overflow: 'hidden',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+                boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+                border: '1px solid rgba(102, 126, 234, 0.2)'
             }}>
                 {/* Left Side - Illustration */}
                 <div style={{
@@ -113,13 +112,19 @@ const LoginPage = () => {
                 <div style={{
                     flex: 1,
                     padding: '50px',
-                    backgroundColor: 'white'
+                    background: '#1a1a3e'
                 }}>
                     <div style={{ marginBottom: '30px' }}>
-                        <h2 style={{ fontSize: '28px', color: '#333', marginBottom: '8px' }}>
+                        <h2 style={{
+                            fontSize: '28px',
+                            marginBottom: '8px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}>
                             Sign In
                         </h2>
-                        <p style={{ color: '#666' }}>Enter your credentials to access your account</p>
+                        <p style={{ color: '#a0a0c0' }}>Enter your credentials to access your account</p>
                     </div>
 
                     <form onSubmit={handleSubmit}>
@@ -127,7 +132,7 @@ const LoginPage = () => {
                             <label style={{
                                 display: 'block',
                                 marginBottom: '8px',
-                                color: '#333',
+                                color: '#c0c0e0',
                                 fontWeight: '500'
                             }}>
                                 Email Address
@@ -135,11 +140,11 @@ const LoginPage = () => {
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                border: '2px solid #e5e7eb',
+                                background: '#2a2a5e',
+                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                 borderRadius: '12px',
                                 padding: '0 15px',
-                                transition: 'all 0.3s',
-                                backgroundColor: '#f9fafb'
+                                transition: 'all 0.3s'
                             }}>
                                 <span style={{ fontSize: '20px', marginRight: '10px' }}>📧</span>
                                 <input
@@ -153,7 +158,8 @@ const LoginPage = () => {
                                         border: 'none',
                                         outline: 'none',
                                         fontSize: '15px',
-                                        backgroundColor: 'transparent'
+                                        background: 'transparent',
+                                        color: 'white'
                                     }}
                                     placeholder="Enter your email"
                                 />
@@ -164,7 +170,7 @@ const LoginPage = () => {
                             <label style={{
                                 display: 'block',
                                 marginBottom: '8px',
-                                color: '#333',
+                                color: '#c0c0e0',
                                 fontWeight: '500'
                             }}>
                                 Password
@@ -172,11 +178,11 @@ const LoginPage = () => {
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                border: '2px solid #e5e7eb',
+                                background: '#2a2a5e',
+                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                 borderRadius: '12px',
                                 padding: '0 15px',
-                                transition: 'all 0.3s',
-                                backgroundColor: '#f9fafb'
+                                transition: 'all 0.3s'
                             }}>
                                 <span style={{ fontSize: '20px', marginRight: '10px' }}>🔒</span>
                                 <input
@@ -190,7 +196,8 @@ const LoginPage = () => {
                                         border: 'none',
                                         outline: 'none',
                                         fontSize: '15px',
-                                        backgroundColor: 'transparent'
+                                        background: 'transparent',
+                                        color: 'white'
                                     }}
                                     placeholder="Enter your password"
                                 />
@@ -202,7 +209,8 @@ const LoginPage = () => {
                                         border: 'none',
                                         cursor: 'pointer',
                                         fontSize: '18px',
-                                        padding: '5px'
+                                        padding: '5px',
+                                        color: '#a0a0c0'
                                     }}
                                 >
                                     {showPassword ? '👁️' : '👁️‍🗨️'}
@@ -216,7 +224,7 @@ const LoginPage = () => {
                             style={{
                                 width: '100%',
                                 padding: '14px',
-                                backgroundColor: '#667eea',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '12px',
@@ -224,14 +232,13 @@ const LoginPage = () => {
                                 fontWeight: 'bold',
                                 cursor: 'pointer',
                                 transition: 'transform 0.2s, opacity 0.2s',
-                                opacity: loading ? 0.7 : 1,
-                                transform: loading ? 'none' : 'scale(1)'
+                                opacity: loading ? 0.7 : 1
                             }}
                             onMouseEnter={(e) => {
-                                if (!loading) e.target.style.transform = 'scale(1.02)';
+                                if (!loading) e.target.style.transform = 'translateY(-2px)';
                             }}
                             onMouseLeave={(e) => {
-                                if (!loading) e.target.style.transform = 'scale(1)';
+                                if (!loading) e.target.style.transform = 'translateY(0)';
                             }}
                         >
                             {loading ? (
@@ -246,14 +253,15 @@ const LoginPage = () => {
                     <div style={{
                         marginTop: '25px',
                         padding: '15px',
-                        backgroundColor: '#f3f4f6',
+                        background: '#2a2a5e',
                         borderRadius: '10px',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        border: '1px solid rgba(102, 126, 234, 0.2)'
                     }}>
-                        <p style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
+                        <p style={{ fontSize: '12px', color: '#a0a0c0', marginBottom: '8px' }}>
                             <strong>Demo Credentials:</strong>
                         </p>
-                        <div style={{ fontSize: '11px', color: '#888' }}>
+                        <div style={{ fontSize: '11px', color: '#c0c0e0' }}>
                             <div>👤 User: user@test.com / password</div>
                             <div>👨‍💼 Admin: admin@marvelkitchen.com / admin123</div>
                         </div>
@@ -263,7 +271,7 @@ const LoginPage = () => {
                         marginTop: '15px',
                         textAlign: 'center',
                         fontSize: '13px',
-                        color: '#666'
+                        color: '#a0a0c0'
                     }}>
                         <Link to="/forgot-password" style={{ color: '#667eea', textDecoration: 'none' }}>
                             Forgot Password?

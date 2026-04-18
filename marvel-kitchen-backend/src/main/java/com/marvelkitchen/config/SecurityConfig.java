@@ -49,7 +49,10 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/auth/**", "/api/products/**", "/api/categories/**").permitAll()
                 
-                // ✅ Admin endpoints - FIXED
+                // ✅ Payment endpoints - Allow all (no auth required)
+                .requestMatchers("/api/payments/**").permitAll()
+                
+                // Admin endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
                 // User endpoints - authenticated

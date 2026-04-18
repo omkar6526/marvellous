@@ -13,7 +13,6 @@ import {
     MapPin,
     Phone,
     CreditCard,
-    IndianRupee,
     Calendar,
     ArrowLeft
 } from 'lucide-react';
@@ -80,22 +79,22 @@ const MyOrdersPage = () => {
         return (
             <div style={{
                 minHeight: '100vh',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#0f0f23',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center'
             }}>
-                <div style={{ textAlign: 'center', color: 'white' }}>
-                    <div className="spinner" style={{
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
                         width: '50px',
                         height: '50px',
-                        border: '4px solid rgba(255,255,255,0.3)',
-                        borderTop: '4px solid white',
+                        border: '4px solid #667eea',
+                        borderTop: '4px solid transparent',
                         borderRadius: '50%',
                         animation: 'spin 1s linear infinite',
                         margin: '0 auto 20px'
                     }}></div>
-                    <h3>Loading your orders...</h3>
+                    <h3 style={{ color: '#667eea' }}>Loading your orders...</h3>
                 </div>
             </div>
         );
@@ -105,28 +104,29 @@ const MyOrdersPage = () => {
         return (
             <div style={{
                 minHeight: '100vh',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#0f0f23',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center'
             }}>
                 <div style={{
-                    backgroundColor: 'white',
+                    background: '#1a1a3e',
                     borderRadius: '20px',
                     padding: '50px',
                     textAlign: 'center',
                     maxWidth: '500px',
-                    margin: '20px'
+                    margin: '20px',
+                    border: '1px solid rgba(102, 126, 234, 0.2)'
                 }}>
                     <ShoppingBag size={80} color="#667eea" style={{ marginBottom: '20px' }} />
-                    <h2 style={{ color: '#333', marginBottom: '10px' }}>No Orders Yet</h2>
-                    <p style={{ color: '#666', marginBottom: '30px' }}>
+                    <h2 style={{ color: 'white', marginBottom: '10px' }}>No Orders Yet</h2>
+                    <p style={{ color: '#a0a0c0', marginBottom: '30px' }}>
                         Looks like you haven't placed any orders yet. Start exploring our delicious menu!
                     </p>
                     <button 
                         onClick={() => navigate('/menu')} 
                         style={{
-                            backgroundColor: '#667eea',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                             color: 'white',
                             border: 'none',
                             padding: '12px 30px',
@@ -148,7 +148,7 @@ const MyOrdersPage = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: '#0f0f23',
             padding: '40px 20px'
         }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -163,26 +163,28 @@ const MyOrdersPage = () => {
                 }}>
                     <div>
                         <h1 style={{
-                            color: 'white',
                             fontSize: '36px',
                             margin: 0,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '10px'
+                            gap: '10px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
                         }}>
-                            <ShoppingBag size={36} />
+                            <ShoppingBag size={36} color="#667eea" />
                             My Orders
                         </h1>
-                        <p style={{ color: 'rgba(255,255,255,0.9)', marginTop: '10px' }}>
+                        <p style={{ color: '#a0a0c0', marginTop: '10px' }}>
                             You have {orders.length} {orders.length === 1 ? 'order' : 'orders'}
                         </p>
                     </div>
                     <button 
                         onClick={() => navigate('/menu')}
                         style={{
-                            backgroundColor: 'white',
+                            background: '#1a1a3e',
                             color: '#667eea',
-                            border: 'none',
+                            border: '1px solid rgba(102, 126, 234, 0.3)',
                             padding: '10px 20px',
                             borderRadius: '25px',
                             fontSize: '14px',
@@ -190,7 +192,16 @@ const MyOrdersPage = () => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '5px',
-                            fontWeight: 'bold'
+                            fontWeight: 'bold',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.background = '#2a2a5e';
+                            e.target.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.background = '#1a1a3e';
+                            e.target.style.transform = 'translateY(0)';
                         }}
                     >
                         <ArrowLeft size={16} />
@@ -202,26 +213,26 @@ const MyOrdersPage = () => {
                 <div style={{ display: 'grid', gap: '25px' }}>
                     {orders.map((order) => (
                         <div key={order.id} style={{
-                            backgroundColor: 'white',
+                            background: '#1a1a3e',
                             borderRadius: '15px',
                             overflow: 'hidden',
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                            border: '1px solid rgba(102, 126, 234, 0.2)',
                             transition: 'transform 0.3s, box-shadow 0.3s',
                             cursor: 'pointer'
                         }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'translateY(-5px)';
-                            e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.15)';
+                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.3)';
                         }}
                         onMouseLeave={(e) => {
                             e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.1)';
+                            e.currentTarget.style.boxShadow = 'none';
                         }}
                         onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}
                         >
                             {/* Order Header */}
                             <div style={{
-                                background: `linear-gradient(135deg, ${getStatusColor(order.status)}20, white)`,
+                                background: `linear-gradient(135deg, ${getStatusColor(order.status)}20, #1a1a3e)`,
                                 padding: '20px',
                                 borderBottom: `3px solid ${getStatusColor(order.status)}`
                             }}>
@@ -235,7 +246,7 @@ const MyOrdersPage = () => {
                                     <div>
                                         <div style={{
                                             fontSize: '14px',
-                                            color: '#666',
+                                            color: '#a0a0c0',
                                             marginBottom: '5px',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -254,7 +265,7 @@ const MyOrdersPage = () => {
                                         <div style={{
                                             fontSize: '20px',
                                             fontWeight: 'bold',
-                                            color: '#333'
+                                            color: 'white'
                                         }}>
                                             Order #{order.orderId || order.id}
                                         </div>
@@ -264,7 +275,7 @@ const MyOrdersPage = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '10px',
-                                        backgroundColor: `${getStatusColor(order.status)}15`,
+                                        background: `${getStatusColor(order.status)}20`,
                                         padding: '8px 15px',
                                         borderRadius: '20px'
                                     }}>
@@ -288,12 +299,14 @@ const MyOrdersPage = () => {
                                     marginBottom: '15px'
                                 }}>
                                     <div>
-                                        <strong>{order.items?.length || 0} items</strong>
+                                        <strong style={{ color: '#c0c0e0' }}>{order.items?.length || 0} items</strong>
                                     </div>
                                     <div style={{
                                         fontSize: '20px',
                                         fontWeight: 'bold',
-                                        color: '#667eea'
+                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent'
                                     }}>
                                         ₹{order.grandTotal}
                                     </div>
@@ -308,22 +321,22 @@ const MyOrdersPage = () => {
                                 }}>
                                     {order.items?.slice(0, 3).map((item, idx) => (
                                         <span key={idx} style={{
-                                            backgroundColor: '#f3f4f6',
+                                            background: '#2a2a5e',
                                             padding: '5px 12px',
                                             borderRadius: '15px',
                                             fontSize: '13px',
-                                            color: '#666'
+                                            color: '#c0c0e0'
                                         }}>
                                             {item.quantity}x {item.productName}
                                         </span>
                                     ))}
                                     {order.items?.length > 3 && (
                                         <span style={{
-                                            backgroundColor: '#f3f4f6',
+                                            background: '#2a2a5e',
                                             padding: '5px 12px',
                                             borderRadius: '15px',
                                             fontSize: '13px',
-                                            color: '#666'
+                                            color: '#c0c0e0'
                                         }}>
                                             +{order.items.length - 3} more
                                         </span>
@@ -351,27 +364,27 @@ const MyOrdersPage = () => {
                             {/* Expanded Details */}
                             {selectedOrder === order.id && (
                                 <div style={{
-                                    borderTop: '1px solid #eee',
+                                    borderTop: '1px solid rgba(255,255,255,0.1)',
                                     padding: '20px',
-                                    backgroundColor: '#f9fafb'
+                                    background: '#2a2a5e'
                                 }}>
                                     {/* All Items */}
-                                    <h4 style={{ marginBottom: '15px', color: '#333' }}>Order Items</h4>
+                                    <h4 style={{ marginBottom: '15px', color: 'white' }}>Order Items</h4>
                                     <div style={{ marginBottom: '20px' }}>
                                         {order.items?.map((item, idx) => (
                                             <div key={idx} style={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
                                                 padding: '10px 0',
-                                                borderBottom: '1px solid #e5e7eb'
+                                                borderBottom: '1px solid rgba(255,255,255,0.1)'
                                             }}>
                                                 <div>
-                                                    <div style={{ fontWeight: 'bold' }}>{item.productName}</div>
-                                                    <div style={{ fontSize: '12px', color: '#666' }}>
+                                                    <div style={{ fontWeight: 'bold', color: 'white' }}>{item.productName}</div>
+                                                    <div style={{ fontSize: '12px', color: '#a0a0c0' }}>
                                                         Quantity: {item.quantity}
                                                     </div>
                                                 </div>
-                                                <div style={{ fontWeight: 'bold', color: '#667eea' }}>
+                                                <div style={{ fontWeight: 'bold', color: '#10b981' }}>
                                                     ₹{item.price * item.quantity}
                                                 </div>
                                             </div>
@@ -380,22 +393,22 @@ const MyOrdersPage = () => {
 
                                     {/* Price Breakdown */}
                                     <div style={{
-                                        backgroundColor: 'white',
+                                        background: '#1a1a3e',
                                         borderRadius: '10px',
                                         padding: '15px',
                                         marginBottom: '20px'
                                     }}>
-                                        <h4 style={{ marginBottom: '10px' }}>Price Details</h4>
+                                        <h4 style={{ marginBottom: '10px', color: 'white' }}>Price Details</h4>
                                         <div style={{ display: 'grid', gap: '8px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c0c0e0' }}>
                                                 <span>Subtotal:</span>
                                                 <span>₹{order.totalAmount}</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c0c0e0' }}>
                                                 <span>Delivery Charge:</span>
                                                 <span>₹{order.deliveryCharge}</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c0c0e0' }}>
                                                 <span>Tax (5%):</span>
                                                 <span>₹{order.tax}</span>
                                             </div>
@@ -404,11 +417,11 @@ const MyOrdersPage = () => {
                                                 justifyContent: 'space-between',
                                                 fontWeight: 'bold',
                                                 fontSize: '18px',
-                                                borderTop: '2px solid #e5e7eb',
+                                                borderTop: '1px solid rgba(255,255,255,0.2)',
                                                 paddingTop: '10px',
                                                 marginTop: '5px'
                                             }}>
-                                                <span>Grand Total:</span>
+                                                <span style={{ color: 'white' }}>Grand Total:</span>
                                                 <span style={{ color: '#10b981' }}>₹{order.grandTotal}</span>
                                             </div>
                                         </div>
@@ -416,22 +429,22 @@ const MyOrdersPage = () => {
 
                                     {/* Delivery Info */}
                                     <div style={{
-                                        backgroundColor: 'white',
+                                        background: '#1a1a3e',
                                         borderRadius: '10px',
                                         padding: '15px'
                                     }}>
-                                        <h4 style={{ marginBottom: '10px' }}>Delivery Information</h4>
+                                        <h4 style={{ marginBottom: '10px', color: 'white' }}>Delivery Information</h4>
                                         <div style={{ display: 'grid', gap: '8px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <MapPin size={16} color="#6b7280" />
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#c0c0e0' }}>
+                                                <MapPin size={16} />
                                                 <span>{order.deliveryAddress}</span>
                                             </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <Phone size={16} color="#6b7280" />
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#c0c0e0' }}>
+                                                <Phone size={16} />
                                                 <span>{order.phoneNumber}</span>
                                             </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <CreditCard size={16} color="#6b7280" />
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#c0c0e0' }}>
+                                                <CreditCard size={16} />
                                                 <span>{order.paymentMethod}</span>
                                             </div>
                                         </div>

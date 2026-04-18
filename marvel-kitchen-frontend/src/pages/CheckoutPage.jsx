@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { placeOrder } from '../services/api';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
+import RazorpayPayment from '../components/RazorpayPayment';
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
@@ -11,6 +12,17 @@ const CheckoutPage = () => {
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState('COD');
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Check screen size for responsive design
+    useEffect(() => {
+        const checkScreenSize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+        return () => window.removeEventListener('resize', checkScreenSize);
+    }, []);
 
     // Calculate final amount
     const deliveryCharge = totalAmount > 200 ? 0 : 40;
@@ -62,32 +74,22 @@ const CheckoutPage = () => {
         );
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        if (!address || !phone) {
-            toast.error('Please fill all fields');
-            return;
-        }
-        
+    // Handle COD order
+    const handleCODOrder = async () => {
         const orderData = {
             deliveryAddress: address,
             phoneNumber: phone,
-            paymentMethod: paymentMethod
+            paymentMethod: 'COD'
         };
-        
-        console.log('Sending order data:', orderData);
         
         setLoading(true);
         
         try {
             const response = await placeOrder(orderData);
             console.log('Order response:', response.data);
-            
             clearCart();
             toast.success('Order placed successfully! 🎉');
             navigate('/my-orders');
-            
         } catch (error) {
             console.error('Order error:', error);
             const errorMsg = typeof error.response?.data === 'string' 
@@ -97,6 +99,50 @@ const CheckoutPage = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Handle Razorpay payment success
+    const handleRazorpaySuccess = async (paymentResponse) => {
+        console.log('Payment success:', paymentResponse);
+        
+        const orderData = {
+            deliveryAddress: address,
+            phoneNumber: phone,
+            paymentMethod: 'RAZORPAY',
+            razorpayPaymentId: paymentResponse.razorpay_payment_id,
+            razorpayOrderId: paymentResponse.razorpay_order_id,
+            razorpaySignature: paymentResponse.razorpay_signature
+        };
+        
+        try {
+            const response = await placeOrder(orderData);
+            console.log('Order response:', response.data);
+            clearCart();
+            toast.success('Payment successful! Order placed. 🎉');
+            navigate('/my-orders');
+        } catch (error) {
+            console.error('Order error:', error);
+            toast.error('Order placed but payment already deducted. Contact support.');
+        }
+    };
+
+    // Handle Razorpay payment failure
+    const handleRazorpayFailure = () => {
+        toast.error('Payment failed. Please try again.');
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!address || !phone) {
+            toast.error('Please fill all fields');
+            return;
+        }
+        
+        if (paymentMethod === 'COD') {
+            await handleCODOrder();
+        }
+        // For RAZORPAY, payment handled by RazorpayPayment component
     };
 
     return (
@@ -123,14 +169,11 @@ const CheckoutPage = () => {
                     </p>
                 </div>
 
-                {/* Main Content */}
+                {/* Main Content - Fixed responsive grid */}
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: '1fr 380px',
-                    gap: '30px',
-                    '@media (max-width: 768px)': {
-                        gridTemplateColumns: '1fr'
-                    }
+                    gridTemplateColumns: isMobile ? '1fr' : '1fr 380px',
+                    gap: '30px'
                 }}>
                     {/* Left Side - Form */}
                     <div style={{
@@ -225,7 +268,7 @@ const CheckoutPage = () => {
                                 }}>
                                     {[
                                         { value: 'COD', label: 'Cash on Delivery', icon: '💵' },
-                                        { value: 'CARD', label: 'Credit/Debit Card', icon: '💳' },
+                                        { value: 'RAZORPAY', label: 'Card/UPI', icon: '💳' },
                                         { value: 'UPI', label: 'UPI / Wallet', icon: '📱' }
                                     ].map(method => (
                                         <button
@@ -261,32 +304,41 @@ const CheckoutPage = () => {
                                 </div>
                             </div>
 
-                            {/* Place Order Button */}
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                style={{
-                                    width: '100%',
-                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    color: 'white',
-                                    border: 'none',
-                                    padding: '16px',
-                                    borderRadius: '30px',
-                                    fontSize: '16px',
-                                    fontWeight: '600',
-                                    cursor: loading ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    opacity: loading ? 0.7 : 1
-                                }}
-                                onMouseEnter={(e) => !loading && (e.target.style.transform = 'translateY(-2px)')}
-                                onMouseLeave={(e) => !loading && (e.target.style.transform = 'translateY(0)')}
-                            >
-                                {loading ? (
-                                    <span>⏳ Processing...</span>
-                                ) : (
-                                    <span>Place Order →</span>
-                                )}
-                            </button>
+                            {/* Place Order Button / Razorpay Button */}
+                            {paymentMethod === 'COD' ? (
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    style={{
+                                        width: '100%',
+                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '16px',
+                                        borderRadius: '30px',
+                                        fontSize: '16px',
+                                        fontWeight: '600',
+                                        cursor: loading ? 'not-allowed' : 'pointer',
+                                        transition: 'all 0.3s ease',
+                                        opacity: loading ? 0.7 : 1
+                                    }}
+                                    onMouseEnter={(e) => !loading && (e.target.style.transform = 'translateY(-2px)')}
+                                    onMouseLeave={(e) => !loading && (e.target.style.transform = 'translateY(0)')}
+                                >
+                                    {loading ? (
+                                        <span>⏳ Processing...</span>
+                                    ) : (
+                                        <span>Place Order (COD) →</span>
+                                    )}
+                                </button>
+                            ) : (
+                                <RazorpayPayment
+                                    amount={Math.round(grandTotal)}
+                                    orderId={`ORD${Date.now()}`}
+                                    onSuccess={handleRazorpaySuccess}
+                                    onFailure={handleRazorpayFailure}
+                                />
+                            )}
                         </form>
                     </div>
 

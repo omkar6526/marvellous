@@ -30,7 +30,7 @@ public class OrderService {
     @Autowired
     private ProductService productService;
     
-    // Place new order
+    // Place new order - For COD and normal payments
     @Transactional
     public Order placeOrder(Long userId, String deliveryAddress, String phoneNumber, String paymentMethod) {
         User user = userService.findById(userId);
@@ -48,6 +48,70 @@ public class OrderService {
         order.setDeliveryAddress(deliveryAddress);
         order.setPhoneNumber(phoneNumber);
         order.setPaymentMethod(Order.PaymentMethod.valueOf(paymentMethod));
+        
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        
+        // Add items to order
+        for (CartItem cartItem : cartItems) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProduct(cartItem.getProduct());
+            orderItem.setProductName(cartItem.getProduct().getName());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(cartItem.getProduct().getPrice());
+            
+            order.getItems().add(orderItem);
+            
+            totalAmount = totalAmount.add(cartItem.getProduct().getPrice()
+                .multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+        }
+        
+        // Calculate totals
+        order.setTotalAmount(totalAmount);
+        
+        BigDecimal deliveryCharge = totalAmount.compareTo(BigDecimal.valueOf(200)) > 0 ? 
+            BigDecimal.ZERO : BigDecimal.valueOf(40);
+        order.setDeliveryCharge(deliveryCharge);
+        
+        BigDecimal tax = totalAmount.multiply(BigDecimal.valueOf(0.05));
+        order.setTax(tax);
+        
+        BigDecimal grandTotal = totalAmount.add(deliveryCharge).add(tax);
+        order.setGrandTotal(grandTotal);
+        
+        // Save order
+        Order savedOrder = orderRepository.save(order);
+        
+        // Clear user's cart
+        cartItemRepository.deleteByUser(user);
+        
+        return savedOrder;
+    }
+    
+    // ✅ NEW METHOD - Place order with Razorpay payment
+    @Transactional
+    public Order placeOrderWithRazorpay(Long userId, String deliveryAddress, String phoneNumber, 
+                                        String paymentMethod, String razorpayPaymentId, 
+                                        String razorpayOrderId, String razorpaySignature) {
+        User user = userService.findById(userId);
+        
+        // Get user's cart items
+        List<CartItem> cartItems = cartItemRepository.findByUser(user);
+        
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException("Cart is empty!");
+        }
+        
+        // Create order
+        Order order = new Order();
+        order.setUser(user);
+        order.setDeliveryAddress(deliveryAddress);
+        order.setPhoneNumber(phoneNumber);
+        order.setPaymentMethod(Order.PaymentMethod.valueOf(paymentMethod));
+        
+        // Store Razorpay details (if you have these fields in Order entity)
+        // order.setRazorpayPaymentId(razorpayPaymentId);
+        // order.setRazorpayOrderId(razorpayOrderId);
         
         BigDecimal totalAmount = BigDecimal.ZERO;
         

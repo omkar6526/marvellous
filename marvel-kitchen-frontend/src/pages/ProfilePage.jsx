@@ -74,22 +74,22 @@ const ProfilePage = () => {
         return (
             <div style={{
                 minHeight: '100vh',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#0f0f23',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center'
             }}>
-                <div style={{ textAlign: 'center', color: 'white' }}>
-                    <div className="spinner" style={{
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
                         width: '50px',
                         height: '50px',
-                        border: '4px solid rgba(255,255,255,0.3)',
-                        borderTop: '4px solid white',
+                        border: '4px solid #667eea',
+                        borderTop: '4px solid transparent',
                         borderRadius: '50%',
                         animation: 'spin 1s linear infinite',
                         margin: '0 auto 20px'
                     }}></div>
-                    <h3>Loading profile...</h3>
+                    <h3 style={{ color: '#667eea' }}>Loading profile...</h3>
                 </div>
             </div>
         );
@@ -98,7 +98,7 @@ const ProfilePage = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: '#0f0f23',
             padding: '40px 20px'
         }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -113,26 +113,28 @@ const ProfilePage = () => {
                 }}>
                     <div>
                         <h1 style={{
-                            color: 'white',
                             fontSize: '36px',
                             margin: 0,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '10px'
+                            gap: '10px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
                         }}>
                             <span>👤</span>
                             My Profile
                         </h1>
-                        <p style={{ color: 'rgba(255,255,255,0.9)', marginTop: '10px' }}>
+                        <p style={{ color: '#a0a0c0', marginTop: '10px' }}>
                             Manage your account information
                         </p>
                     </div>
                     <button 
                         onClick={() => navigate('/menu')}
                         style={{
-                            backgroundColor: 'white',
+                            background: '#1a1a3e',
                             color: '#667eea',
-                            border: 'none',
+                            border: '1px solid rgba(102, 126, 234, 0.3)',
                             padding: '10px 20px',
                             borderRadius: '25px',
                             fontSize: '14px',
@@ -140,7 +142,16 @@ const ProfilePage = () => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '5px',
-                            fontWeight: 'bold'
+                            fontWeight: 'bold',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.background = '#2a2a5e';
+                            e.target.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.background = '#1a1a3e';
+                            e.target.style.transform = 'translateY(0)';
                         }}
                     >
                         ← Back to Menu
@@ -151,39 +162,35 @@ const ProfilePage = () => {
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 1.5fr',
-                    gap: '30px',
-                    '@media (max-width: 768px)': {
-                        gridTemplateColumns: '1fr'
-                    }
+                    gap: '30px'
                 }}>
                     {/* Left Column - Profile Info */}
                     <div>
                         {/* Profile Card */}
                         <div style={{
-                            backgroundColor: 'white',
+                            background: '#1a1a3e',
                             borderRadius: '20px',
                             padding: '30px',
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+                            border: '1px solid rgba(102, 126, 234, 0.2)'
                         }}>
                             <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                                 <div style={{
                                     width: '100px',
                                     height: '100px',
-                                    backgroundColor: 'linear-gradient(135deg, #667eea, #764ba2)',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                     borderRadius: '50%',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    margin: '0 auto 15px',
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                    margin: '0 auto 15px'
                                 }}>
                                     <span style={{ fontSize: '48px' }}>👨‍🍳</span>
                                 </div>
-                                <h2 style={{ color: '#333', marginBottom: '5px' }}>{user?.name}</h2>
-                                <p style={{ color: '#666' }}>{user?.email}</p>
+                                <h2 style={{ color: 'white', marginBottom: '5px' }}>{user?.name}</h2>
+                                <p style={{ color: '#a0a0c0' }}>{user?.email}</p>
                                 <p style={{ 
                                     display: 'inline-block',
-                                    backgroundColor: '#e0e7ff',
+                                    background: 'rgba(102, 126, 234, 0.2)',
                                     color: '#667eea',
                                     padding: '5px 15px',
                                     borderRadius: '20px',
@@ -197,34 +204,34 @@ const ProfilePage = () => {
                             {!editing ? (
                                 <>
                                     <div style={{
-                                        borderTop: '1px solid #eee',
+                                        borderTop: '1px solid rgba(255,255,255,0.1)',
                                         paddingTop: '20px'
                                     }}>
-                                        <h3 style={{ marginBottom: '15px', color: '#333' }}>Contact Information</h3>
+                                        <h3 style={{ marginBottom: '15px', color: 'white' }}>Contact Information</h3>
                                         
                                         <div style={{ marginBottom: '15px' }}>
-                                            <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
+                                            <div style={{ fontSize: '12px', color: '#a0a0c0', marginBottom: '5px' }}>
                                                 📞 Phone Number
                                             </div>
-                                            <div style={{ fontSize: '16px', color: '#333' }}>
+                                            <div style={{ fontSize: '16px', color: '#c0c0e0' }}>
                                                 {user?.phone || 'Not provided'}
                                             </div>
                                         </div>
                                         
                                         <div style={{ marginBottom: '15px' }}>
-                                            <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
+                                            <div style={{ fontSize: '12px', color: '#a0a0c0', marginBottom: '5px' }}>
                                                 📍 Delivery Address
                                             </div>
-                                            <div style={{ fontSize: '16px', color: '#333' }}>
+                                            <div style={{ fontSize: '16px', color: '#c0c0e0' }}>
                                                 {user?.address || 'Not provided'}
                                             </div>
                                         </div>
                                         
                                         <div style={{ marginBottom: '15px' }}>
-                                            <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
+                                            <div style={{ fontSize: '12px', color: '#a0a0c0', marginBottom: '5px' }}>
                                                 🗓️ Member Since
                                             </div>
-                                            <div style={{ fontSize: '16px', color: '#333' }}>
+                                            <div style={{ fontSize: '16px', color: '#c0c0e0' }}>
                                                 {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                                             </div>
                                         </div>
@@ -234,7 +241,7 @@ const ProfilePage = () => {
                                         onClick={() => setEditing(true)}
                                         style={{
                                             width: '100%',
-                                            backgroundColor: '#667eea',
+                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                             color: 'white',
                                             border: 'none',
                                             padding: '12px',
@@ -253,7 +260,7 @@ const ProfilePage = () => {
                             ) : (
                                 <form onSubmit={handleUpdate}>
                                     <div style={{ marginBottom: '15px' }}>
-                                        <label style={{ display: 'block', marginBottom: '5px', color: '#333' }}>
+                                        <label style={{ display: 'block', marginBottom: '5px', color: '#c0c0e0' }}>
                                             Full Name
                                         </label>
                                         <input
@@ -263,16 +270,18 @@ const ProfilePage = () => {
                                             style={{
                                                 width: '100%',
                                                 padding: '10px',
-                                                border: '1px solid #ddd',
+                                                background: '#2a2a5e',
+                                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                                 borderRadius: '8px',
-                                                fontSize: '14px'
+                                                fontSize: '14px',
+                                                color: 'white'
                                             }}
                                             required
                                         />
                                     </div>
                                     
                                     <div style={{ marginBottom: '15px' }}>
-                                        <label style={{ display: 'block', marginBottom: '5px', color: '#333' }}>
+                                        <label style={{ display: 'block', marginBottom: '5px', color: '#c0c0e0' }}>
                                             Phone Number
                                         </label>
                                         <input
@@ -282,15 +291,17 @@ const ProfilePage = () => {
                                             style={{
                                                 width: '100%',
                                                 padding: '10px',
-                                                border: '1px solid #ddd',
+                                                background: '#2a2a5e',
+                                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                                 borderRadius: '8px',
-                                                fontSize: '14px'
+                                                fontSize: '14px',
+                                                color: 'white'
                                             }}
                                         />
                                     </div>
                                     
                                     <div style={{ marginBottom: '20px' }}>
-                                        <label style={{ display: 'block', marginBottom: '5px', color: '#333' }}>
+                                        <label style={{ display: 'block', marginBottom: '5px', color: '#c0c0e0' }}>
                                             Delivery Address
                                         </label>
                                         <textarea
@@ -300,9 +311,11 @@ const ProfilePage = () => {
                                             style={{
                                                 width: '100%',
                                                 padding: '10px',
-                                                border: '1px solid #ddd',
+                                                background: '#2a2a5e',
+                                                border: '1px solid rgba(102, 126, 234, 0.3)',
                                                 borderRadius: '8px',
-                                                fontSize: '14px'
+                                                fontSize: '14px',
+                                                color: 'white'
                                             }}
                                         />
                                     </div>
@@ -312,7 +325,7 @@ const ProfilePage = () => {
                                             type="submit"
                                             style={{
                                                 flex: 1,
-                                                backgroundColor: '#10b981',
+                                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                                                 color: 'white',
                                                 border: 'none',
                                                 padding: '12px',
@@ -327,7 +340,7 @@ const ProfilePage = () => {
                                             onClick={() => setEditing(false)}
                                             style={{
                                                 flex: 1,
-                                                backgroundColor: '#6b7280',
+                                                background: '#6b7280',
                                                 color: 'white',
                                                 border: 'none',
                                                 padding: '12px',
@@ -346,10 +359,10 @@ const ProfilePage = () => {
                     {/* Right Column - Recent Orders */}
                     <div>
                         <div style={{
-                            backgroundColor: 'white',
+                            background: '#1a1a3e',
                             borderRadius: '20px',
                             padding: '30px',
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+                            border: '1px solid rgba(102, 126, 234, 0.2)'
                         }}>
                             <div style={{
                                 display: 'flex',
@@ -357,18 +370,21 @@ const ProfilePage = () => {
                                 alignItems: 'center',
                                 marginBottom: '20px'
                             }}>
-                                <h3 style={{ color: '#333' }}>📦 Recent Orders</h3>
+                                <h3 style={{ color: 'white' }}>📦 Recent Orders</h3>
                                 <button
                                     onClick={() => navigate('/my-orders')}
                                     style={{
-                                        backgroundColor: '#f3f4f6',
+                                        background: '#2a2a5e',
                                         border: 'none',
                                         padding: '5px 12px',
                                         borderRadius: '15px',
                                         cursor: 'pointer',
                                         fontSize: '12px',
-                                        color: '#667eea'
+                                        color: '#667eea',
+                                        transition: 'all 0.2s'
                                     }}
+                                    onMouseEnter={(e) => e.target.style.background = '#3a3a6e'}
+                                    onMouseLeave={(e) => e.target.style.background = '#2a2a5e'}
                                 >
                                     View All
                                 </button>
@@ -377,11 +393,11 @@ const ProfilePage = () => {
                             {orders.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '40px' }}>
                                     <span style={{ fontSize: '48px' }}>🍕</span>
-                                    <p style={{ color: '#666', marginTop: '10px' }}>No orders yet</p>
+                                    <p style={{ color: '#a0a0c0', marginTop: '10px' }}>No orders yet</p>
                                     <button
                                         onClick={() => navigate('/menu')}
                                         style={{
-                                            backgroundColor: '#667eea',
+                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                             color: 'white',
                                             border: 'none',
                                             padding: '8px 20px',
@@ -399,20 +415,21 @@ const ProfilePage = () => {
                                         <div
                                             key={order.id}
                                             style={{
-                                                border: '1px solid #eee',
+                                                border: '1px solid rgba(102, 126, 234, 0.2)',
                                                 borderRadius: '12px',
                                                 padding: '15px',
                                                 marginBottom: '15px',
                                                 cursor: 'pointer',
-                                                transition: 'all 0.2s'
+                                                transition: 'all 0.2s',
+                                                background: '#1a1a3e'
                                             }}
                                             onClick={() => navigate('/my-orders')}
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = '#f9fafb';
+                                                e.currentTarget.style.background = '#2a2a5e';
                                                 e.currentTarget.style.transform = 'translateX(5px)';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'white';
+                                                e.currentTarget.style.background = '#1a1a3e';
                                                 e.currentTarget.style.transform = 'translateX(0)';
                                             }}
                                         >
@@ -423,15 +440,15 @@ const ProfilePage = () => {
                                                 marginBottom: '10px'
                                             }}>
                                                 <div>
-                                                    <div style={{ fontWeight: 'bold', color: '#333' }}>
+                                                    <div style={{ fontWeight: 'bold', color: 'white' }}>
                                                         Order #{order.orderId || order.id}
                                                     </div>
-                                                    <div style={{ fontSize: '12px', color: '#666' }}>
+                                                    <div style={{ fontSize: '12px', color: '#a0a0c0' }}>
                                                         {new Date(order.orderedAt).toLocaleDateString()}
                                                     </div>
                                                 </div>
                                                 <div style={{
-                                                    backgroundColor: `${getStatusColor(order.status)}15`,
+                                                    background: `${getStatusColor(order.status)}20`,
                                                     padding: '4px 10px',
                                                     borderRadius: '12px',
                                                     color: getStatusColor(order.status),
@@ -442,11 +459,11 @@ const ProfilePage = () => {
                                                 </div>
                                             </div>
                                             
-                                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
+                                            <div style={{ fontSize: '14px', color: '#a0a0c0', marginBottom: '10px' }}>
                                                 {order.items?.length} items • ₹{order.grandTotal}
                                             </div>
                                             
-                                            <div style={{ fontSize: '12px', color: '#999' }}>
+                                            <div style={{ fontSize: '12px', color: '#c0c0e0' }}>
                                                 {order.items?.slice(0, 2).map(item => item.productName).join(', ')}
                                                 {order.items?.length > 2 && '...'}
                                             </div>
@@ -459,13 +476,13 @@ const ProfilePage = () => {
                         {/* Stats Card */}
                         {orders.length > 0 && (
                             <div style={{
-                                backgroundColor: 'white',
+                                background: '#1a1a3e',
                                 borderRadius: '20px',
                                 padding: '20px',
                                 marginTop: '20px',
-                                boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+                                border: '1px solid rgba(102, 126, 234, 0.2)'
                             }}>
-                                <h3 style={{ marginBottom: '15px', color: '#333' }}>📊 Order Statistics</h3>
+                                <h3 style={{ marginBottom: '15px', color: 'white' }}>📊 Order Statistics</h3>
                                 <div style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(3, 1fr)',
@@ -476,19 +493,19 @@ const ProfilePage = () => {
                                         <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>
                                             {orders.length}
                                         </div>
-                                        <div style={{ fontSize: '12px', color: '#666' }}>Total Orders</div>
+                                        <div style={{ fontSize: '12px', color: '#a0a0c0' }}>Total Orders</div>
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#10b981' }}>
                                             ₹{orders.reduce((sum, o) => sum + (o.grandTotal || 0), 0)}
                                         </div>
-                                        <div style={{ fontSize: '12px', color: '#666' }}>Total Spent</div>
+                                        <div style={{ fontSize: '12px', color: '#a0a0c0' }}>Total Spent</div>
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#f59e0b' }}>
                                             {orders.filter(o => o.status === 'DELIVERED').length}
                                         </div>
-                                        <div style={{ fontSize: '12px', color: '#666' }}>Delivered</div>
+                                        <div style={{ fontSize: '12px', color: '#a0a0c0' }}>Delivered</div>
                                     </div>
                                 </div>
                             </div>
