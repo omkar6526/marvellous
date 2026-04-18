@@ -36,7 +36,7 @@ const RazorpayPayment = ({ amount, orderId, onSuccess, onFailure }) => {
             const order = response.data;
 
             const options = {
-                key: 'rzp_test_SerDMSkbkHt3Ib', // ✅ Tera Test Key ID
+                key: 'rzp_test_SerDMSkbkHt3Ib', 
                 amount: order.amount,
                 currency: order.currency,
                 name: 'Marvel Kitchen',

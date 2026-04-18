@@ -59,7 +59,6 @@ export const CartProvider = ({ children }) => {
         setTotalAmount(0);
     };
 
-    // ✅ Listen for storage events (when logout happens in another tab or window)
     useEffect(() => {
         const handleStorageChange = (e) => {
             if (e.key === 'token') {
@@ -78,7 +77,6 @@ export const CartProvider = ({ children }) => {
         return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
-    // ✅ Listen for page visibility (when user comes back to tab)
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (!document.hidden && localStorage.getItem('token')) {

@@ -11,7 +11,6 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
-        // 👈 YAHAN "Bearer " add karo
         config.headers.Authorization = `Bearer ${token}`;
         console.log('Token added to request:', config.url);
     } else {
@@ -60,7 +59,7 @@ export const getAllUsers = () => api.get('/admin/users');
 
 export const getUserOrders = (userId) => api.get(`/admin/users/${userId}/orders`);
 
-// ✅ ADD THIS - Toggle Product Availability
+// Toggle Product Availability
 export const toggleProductAvailability = (productId) => 
     api.put(`/admin/products/${productId}/toggle`);
 

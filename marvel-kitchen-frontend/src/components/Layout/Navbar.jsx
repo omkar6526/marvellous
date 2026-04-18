@@ -13,7 +13,6 @@ const Navbar = () => {
         localStorage.clear();
         toast.success('Logged out successfully!');
         
-        // ✅ FULL PAGE REFRESH - Force reload to login page
         window.location.href = '/login';
     };
 

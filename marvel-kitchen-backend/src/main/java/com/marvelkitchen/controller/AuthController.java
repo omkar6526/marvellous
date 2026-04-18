@@ -31,7 +31,7 @@ public class AuthController {
     private UserService userService;
     
     @Autowired
-    private PasswordEncoder passwordEncoder;  // ← Add this
+    private PasswordEncoder passwordEncoder;
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
@@ -61,39 +61,36 @@ public class AuthController {
         }
     }
     
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        try {
-            User user = new User();
-            user.setName(request.getName());
-            user.setEmail(request.getEmail());
-            user.setPassword(passwordEncoder.encode(request.getPassword())); // ← Encrypt password
-            user.setPhone(request.getPhone());
-            user.setAddress(request.getAddress());
-            
-            User savedUser = userService.registerUser(user);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "User registered successfully!");
-            response.put("email", savedUser.getEmail());
-            response.put("name", savedUser.getName());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+ @PostMapping("/register")
+public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    try {
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());  // ✅ PLAIN PASSWORD - NO ENCODING HERE
+        user.setPhone(request.getPhone());
+        user.setAddress(request.getAddress());
+        
+        User savedUser = userService.registerUser(user);  // Service will encode
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User registered successfully!");
+        response.put("email", savedUser.getEmail());
+        response.put("name", savedUser.getName());
+        
+        return ResponseEntity.ok(response);
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
-    
+}
     // ✅ ADD THIS ENDPOINT - To encrypt admin password
     @PostMapping("/fix-admin")
     public ResponseEntity<?> fixAdminPassword() {
         try {
-            // Find admin user
             User admin = userService.findByEmail("admin@marvelkitchen.com")
                 .orElse(null);
             
             if (admin == null) {
-                // Create new admin if not exists
                 admin = new User();
                 admin.setName("Admin");
                 admin.setEmail("admin@marvelkitchen.com");
@@ -102,7 +99,6 @@ public class AuthController {
                 admin.setRole(User.Role.ADMIN);
             }
             
-            // Encrypt password "admin123"
             String encryptedPassword = passwordEncoder.encode("admin123");
             admin.setPassword(encryptedPassword);
             
@@ -122,7 +118,6 @@ public class AuthController {
         }
     }
     
-    // ✅ ADD THIS - To test login directly
     @PostMapping("/test-login")
     public ResponseEntity<?> testLogin(@RequestBody LoginRequest request) {
         try {
@@ -133,7 +128,6 @@ public class AuthController {
                 return ResponseEntity.status(401).body("User not found");
             }
             
-            // Manually check password
             if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                 String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
                 

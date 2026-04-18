@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
 import './index.css';
@@ -15,6 +15,15 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 
+const ScrollToTop = () => {
+    const { pathname } = useLocation();
+    
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+    
+    return null;
+};
 
 function App() {
     const isLoggedIn = !!localStorage.getItem('token');
@@ -22,6 +31,7 @@ function App() {
 
     return (
         <BrowserRouter>
+            <ScrollToTop />  
             <Toaster position="top-right" />
             <CartProvider>
                 <Routes>

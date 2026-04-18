@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaPizzaSlice, FaHamburger, FaTruck, FaMoneyBillWave, FaStar, FaCheckCircle, FaArrowRight, FaBreadSlice } from 'react-icons/fa';
+import { GiNoodles, GiChefToque } from 'react-icons/gi';
+import { MdFastfood } from 'react-icons/md';
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -34,19 +37,19 @@ const HomePage = () => {
     }, [slides.length]);
 
     const features = [
-        { icon: "🍕", title: "Fresh Ingredients", desc: "100% fresh and quality ingredients" },
-        { icon: "🚚", title: "Fast Delivery", desc: "Delivery within 30 minutes" },
-        { icon: "💰", title: "Best Prices", desc: "Affordable rates, great value" },
-        { icon: "🌟", title: "Premium Quality", desc: "Top-notch food quality" },
-        { icon: "🍔", title: "Variety Menu", desc: "Wide range of delicious items" },
-        { icon: "🧑‍🍳", title: "Expert Chefs", desc: "Professionally trained chefs" }
+        { icon: <FaPizzaSlice />, title: "Fresh Ingredients", desc: "100% fresh and quality ingredients" },
+        { icon: <FaTruck />, title: "Fast Delivery", desc: "Delivery within 30 minutes" },
+        { icon: <FaMoneyBillWave />, title: "Best Prices", desc: "Affordable rates, great value" },
+        { icon: <FaStar />, title: "Premium Quality", desc: "Top-notch food quality" },
+        { icon: <FaHamburger />, title: "Variety Menu", desc: "Wide range of delicious items" },
+        { icon: <GiChefToque />, title: "Expert Chefs", desc: "Professionally trained chefs" }
     ];
 
     const popularItems = [
-        { name: "Margherita Pizza", price: 299, icon: "🍕", isVeg: true },
-        { name: "Cheese Burger", price: 199, icon: "🍔", isVeg: false },
-        { name: "Garlic Bread", price: 99, icon: "🥖", isVeg: true },
-        { name: "Pasta Alfredo", price: 249, icon: "🍝", isVeg: true }
+        { name: "Margherita Pizza", price: 299, icon: <FaPizzaSlice />, isVeg: true },
+        { name: "Cheese Burger", price: 199, icon: <FaHamburger />, isVeg: false },
+        { name: "Garlic Bread", price: 99, icon: <FaBreadSlice />, isVeg: true },  // ✅ Fixed: using FaBreadSlice
+        { name: "Pasta Alfredo", price: 249, icon: <GiNoodles />, isVeg: true }
     ];
 
     return (
@@ -57,7 +60,6 @@ const HomePage = () => {
                 height: '85vh',
                 overflow: 'hidden'
             }}>
-                {/* Carousel Images */}
                 {slides.map((slide, index) => (
                     <div key={index} style={{
                         position: 'absolute',
@@ -74,7 +76,6 @@ const HomePage = () => {
                     }} />
                 ))}
                 
-                {/* Overlay */}
                 <div style={{
                     position: 'absolute',
                     top: 0,
@@ -84,7 +85,6 @@ const HomePage = () => {
                     background: 'linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%)'
                 }} />
                 
-                {/* Hero Content */}
                 <div style={{
                     position: 'absolute',
                     top: '50%',
@@ -147,7 +147,6 @@ const HomePage = () => {
                     </Link>
                 </div>
 
-                {/* Slide Indicators */}
                 <div style={{
                     position: 'absolute',
                     bottom: '30px',
@@ -216,7 +215,9 @@ const HomePage = () => {
                                 transition: 'transform 0.3s ease'
                             }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'}
                                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
-                                <div style={{ fontSize: '50px', marginBottom: '16px' }}>{feature.icon}</div>
+                                <div style={{ fontSize: '50px', marginBottom: '16px', color: '#667eea' }}>
+                                    {feature.icon}
+                                </div>
                                 <h3 style={{ color: 'white', marginBottom: '12px', fontSize: '20px' }}>{feature.title}</h3>
                                 <p style={{ color: '#a0a0c0', fontSize: '14px', lineHeight: '1.6' }}>{feature.desc}</p>
                             </div>
@@ -268,7 +269,9 @@ const HomePage = () => {
                             }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
                                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                                onClick={() => navigate('/menu')}>
-                                <div style={{ fontSize: '60px', marginBottom: '16px' }}>{item.icon}</div>
+                                <div style={{ fontSize: '50px', marginBottom: '16px', color: '#f59e0b' }}>
+                                    {item.icon}
+                                </div>
                                 <div style={{
                                     display: 'inline-block',
                                     background: item.isVeg ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
@@ -278,7 +281,7 @@ const HomePage = () => {
                                     color: item.isVeg ? '#10b981' : '#ef4444',
                                     marginBottom: '12px'
                                 }}>
-                                    {item.isVeg ? '🌱 VEG' : '🍖 NON-VEG'}
+                                    {item.isVeg ? <FaCheckCircle style={{ marginRight: '4px' }} /> : '🍖'} {item.isVeg ? 'VEG' : 'NON-VEG'}
                                 </div>
                                 <h3 style={{ color: 'white', marginBottom: '8px' }}>{item.name}</h3>
                                 <p style={{ color: '#10b981', fontSize: '24px', fontWeight: 'bold' }}>₹{item.price}</p>
@@ -292,10 +295,14 @@ const HomePage = () => {
                                     cursor: 'pointer',
                                     fontSize: '14px',
                                     fontWeight: '500',
-                                    transition: 'all 0.3s ease'
+                                    transition: 'all 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    justifyContent: 'center'
                                 }} onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
                                    onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>
-                                    Order Now
+                                    Order Now <FaArrowRight />
                                 </button>
                             </div>
                         ))}
@@ -327,13 +334,15 @@ const HomePage = () => {
                         padding: '14px 40px',
                         borderRadius: '50px',
                         textDecoration: 'none',
-                        display: 'inline-block',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '10px',
                         fontWeight: '600',
                         fontSize: '16px',
                         transition: 'transform 0.3s ease'
                     }} onMouseEnter={(e) => e.target.style.transform = 'translateY(-3px)'}
                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}>
-                        Browse Full Menu 🍕
+                        Browse Full Menu <FaArrowRight />
                     </Link>
                 </div>
             </div>
