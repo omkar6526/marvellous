@@ -21,6 +21,7 @@ const AdminDashboard = () => {
         price: '',
         description: '',
         isVeg: true,
+        imageUrl: '',
         category: { id: 1 }
     });
 
@@ -32,10 +33,8 @@ const AdminDashboard = () => {
     const checkAdminAccess = () => {
         const role = localStorage.getItem('role');
         const token = localStorage.getItem('token');
-        
         if (!token || role !== 'ADMIN') {
             navigate('/');
-            return;
         }
     };
 
@@ -48,7 +47,6 @@ const AdminDashboard = () => {
                 getAllProducts(),
                 getAllUsers()
             ]);
-            
             setStats(statsRes.data);
             setOrders(ordersRes.data);
             setProducts(productsRes.data);
@@ -65,17 +63,17 @@ const AdminDashboard = () => {
         try {
             await updateOrderStatus(orderId, status);
             toast.success(`Order #${orderId} status updated to ${status}`);
-            loadDashboardData(); // Refresh data
+            loadDashboardData();
         } catch (error) {
             toast.error('Failed to update status');
         }
     };
 
     const deleteProductHandler = async (productId) => {
-        if (window.confirm('Delete this product?')) {
+        if (window.confirm('Are you sure you want to delete this product?')) {
             try {
                 await deleteProduct(productId);
-                toast.success('Product deleted');
+                toast.success('Product deleted successfully');
                 loadDashboardData();
             } catch (error) {
                 toast.error('Failed to delete product');
@@ -88,7 +86,6 @@ const AdminDashboard = () => {
             toast.error('Please fill required fields');
             return;
         }
-        
         try {
             await addProduct({
                 ...newProduct,
@@ -96,7 +93,7 @@ const AdminDashboard = () => {
             });
             toast.success('Product added successfully');
             setShowAddProduct(false);
-            setNewProduct({ name: '', price: '', description: '', isVeg: true, category: { id: 1 } });
+            setNewProduct({ name: '', price: '', description: '', isVeg: true, imageUrl: '', category: { id: 1 } });
             loadDashboardData();
         } catch (error) {
             toast.error('Failed to add product');
@@ -115,86 +112,108 @@ const AdminDashboard = () => {
         return colors[status] || '#6b7280';
     };
 
+    const getStatusIcon = (status) => {
+        const icons = {
+            'PENDING': '⏰',
+            'CONFIRMED': '✓',
+            'PREPARING': '🍳',
+            'OUT_FOR_DELIVERY': '🚚',
+            'DELIVERED': '✅',
+            'CANCELLED': '❌'
+        };
+        return icons[status] || '📦';
+    };
+
     if (loading) {
         return (
-            <div style={{ minHeight: '100vh', background: '#f3f4f6', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ minHeight: '100vh', background: '#0f0f23', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ width: '50px', height: '50px', border: '4px solid #667eea', borderTop: '4px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
-                    <h3>Loading Dashboard...</h3>
+                    <div style={{ width: '60px', height: '60px', border: '4px solid #667eea', borderTop: '4px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
+                    <h3 style={{ color: '#667eea' }}>Loading Dashboard...</h3>
                 </div>
             </div>
         );
     }
 
     return (
-        <div style={{ minHeight: '100vh', background: '#f3f4f6' }}>
+        <div style={{ minHeight: '100vh', background: '#0f0f23' }}>
             {/* Admin Header */}
             <div style={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                padding: '20px',
+                padding: '20px 30px',
                 position: 'sticky',
                 top: 0,
-                zIndex: 1000
+                zIndex: 1000,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
             }}>
                 <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
                     <div>
-                        <h1 style={{ fontSize: '24px', margin: 0 }}>🛒 Marvel Kitchen - Admin Panel</h1>
-                        <p style={{ fontSize: '14px', opacity: 0.9, marginTop: '5px' }}>
-                            Welcome, {localStorage.getItem('name')}
+                        <h1 style={{ fontSize: '26px', margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span>🍔</span> Marvel Kitchen Admin
+                        </h1>
+                        <p style={{ fontSize: '13px', opacity: 0.9, marginTop: '5px', color: 'rgba(255,255,255,0.9)' }}>
+                            Welcome back, {localStorage.getItem('name')}
                         </p>
                     </div>
                     <button
-                        onClick={() => {
-                            localStorage.clear();
-                            window.location.href = '/login';
-                        }}
+                        onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
                         style={{
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                            border: 'none',
-                            padding: '8px 20px',
-                            borderRadius: '20px',
+                            background: 'rgba(255,255,255,0.15)',
+                            border: '1px solid rgba(255,255,255,0.3)',
+                            padding: '10px 24px',
+                            borderRadius: '30px',
                             color: 'white',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            transition: 'all 0.3s ease'
                         }}
+                        onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.25)'}
+                        onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.15)'}
                     >
                         🚪 Logout
                     </button>
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
+            {/* Main Content */}
+            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '30px' }}>
+                {/* Modern Tabs */}
                 <div style={{
                     display: 'flex',
-                    gap: '10px',
-                    marginBottom: '20px',
+                    gap: '12px',
+                    marginBottom: '30px',
                     flexWrap: 'wrap',
-                    backgroundColor: 'white',
-                    borderRadius: '10px',
-                    padding: '10px',
-                    boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                    background: '#1a1a3e',
+                    borderRadius: '16px',
+                    padding: '8px',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
                 }}>
                     {[
-                        { id: 'dashboard', label: '📊 Dashboard' },
-                        { id: 'orders', label: '📦 Orders' },
-                        { id: 'products', label: '🍕 Products' },
-                        { id: 'users', label: '👥 Users' }
+                        { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+                        { id: 'orders', label: 'Orders', icon: '📦' },
+                        { id: 'products', label: 'Products', icon: '🍕' },
+                        { id: 'users', label: 'Users', icon: '👥' }
                     ].map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             style={{
-                                padding: '10px 25px',
-                                backgroundColor: activeTab === tab.id ? '#667eea' : 'transparent',
-                                color: activeTab === tab.id ? 'white' : '#333',
+                                padding: '12px 28px',
+                                background: activeTab === tab.id ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
+                                color: activeTab === tab.id ? 'white' : '#a0a0c0',
                                 border: 'none',
-                                borderRadius: '8px',
+                                borderRadius: '12px',
                                 cursor: 'pointer',
-                                fontWeight: activeTab === tab.id ? 'bold' : 'normal'
+                                fontWeight: activeTab === tab.id ? '600' : '500',
+                                fontSize: '14px',
+                                transition: 'all 0.3s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
                             }}
                         >
-                            {tab.label}
+                            <span>{tab.icon}</span> {tab.label}
                         </button>
                     ))}
                 </div>
@@ -202,76 +221,230 @@ const AdminDashboard = () => {
                 {/* Dashboard Tab */}
                 {activeTab === 'dashboard' && (
                     <div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-                            <div style={{ background: 'white', borderRadius: '15px', padding: '20px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '40px' }}>📦</div>
-                                <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#667eea' }}>{stats.totalOrders}</div>
-                                <div>Total Orders</div>
+                        {/* Stats Cards */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '24px',
+                            marginBottom: '40px'
+                        }}>
+                            <div style={{
+                                background: 'linear-gradient(135deg, #1a1a3e 0%, #1e1e4a 100%)',
+                                borderRadius: '20px',
+                                padding: '24px',
+                                border: '1px solid rgba(102, 126, 234, 0.2)',
+                                transition: 'transform 0.3s ease',
+                                cursor: 'pointer'
+                            }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                <div style={{ fontSize: '48px', marginBottom: '12px' }}>📦</div>
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#667eea' }}>{stats.totalOrders}</div>
+                                <div style={{ color: '#a0a0c0', marginTop: '8px', fontSize: '14px' }}>Total Orders</div>
                             </div>
-                            <div style={{ background: 'white', borderRadius: '15px', padding: '20px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '40px' }}>⏰</div>
-                                <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#f59e0b' }}>{stats.pendingOrders}</div>
-                                <div>Pending Orders</div>
+                            <div style={{
+                                background: 'linear-gradient(135deg, #1a1a3e 0%, #1e1e4a 100%)',
+                                borderRadius: '20px',
+                                padding: '24px',
+                                border: '1px solid rgba(245, 158, 11, 0.2)',
+                                transition: 'transform 0.3s ease',
+                                cursor: 'pointer'
+                            }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                <div style={{ fontSize: '48px', marginBottom: '12px' }}>⏰</div>
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#f59e0b' }}>{stats.pendingOrders}</div>
+                                <div style={{ color: '#a0a0c0', marginTop: '8px', fontSize: '14px' }}>Pending Orders</div>
                             </div>
-                            <div style={{ background: 'white', borderRadius: '15px', padding: '20px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '40px' }}>💰</div>
-                                <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10b981' }}>₹{stats.totalRevenue}</div>
-                                <div>Total Revenue</div>
+                            <div style={{
+                                background: 'linear-gradient(135deg, #1a1a3e 0%, #1e1e4a 100%)',
+                                borderRadius: '20px',
+                                padding: '24px',
+                                border: '1px solid rgba(16, 185, 129, 0.2)',
+                                transition: 'transform 0.3s ease',
+                                cursor: 'pointer'
+                            }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                <div style={{ fontSize: '48px', marginBottom: '12px' }}>💰</div>
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#10b981' }}>₹{stats.totalRevenue}</div>
+                                <div style={{ color: '#a0a0c0', marginTop: '8px', fontSize: '14px' }}>Total Revenue</div>
                             </div>
-                            <div style={{ background: 'white', borderRadius: '15px', padding: '20px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '40px' }}>👥</div>
-                                <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#8b5cf6' }}>{stats.totalUsers}</div>
-                                <div>Total Users</div>
+                            <div style={{
+                                background: 'linear-gradient(135deg, #1a1a3e 0%, #1e1e4a 100%)',
+                                borderRadius: '20px',
+                                padding: '24px',
+                                border: '1px solid rgba(139, 92, 246, 0.2)',
+                                transition: 'transform 0.3s ease',
+                                cursor: 'pointer'
+                            }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                <div style={{ fontSize: '48px', marginBottom: '12px' }}>👥</div>
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#8b5cf6' }}>{stats.totalUsers}</div>
+                                <div style={{ color: '#a0a0c0', marginTop: '8px', fontSize: '14px' }}>Total Users</div>
                             </div>
-                            <div style={{ background: 'white', borderRadius: '15px', padding: '20px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '40px' }}>🍕</div>
-                                <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#06b6d4' }}>{stats.totalProducts}</div>
-                                <div>Total Products</div>
+                            <div style={{
+                                background: 'linear-gradient(135deg, #1a1a3e 0%, #1e1e4a 100%)',
+                                borderRadius: '20px',
+                                padding: '24px',
+                                border: '1px solid rgba(6, 182, 212, 0.2)',
+                                transition: 'transform 0.3s ease',
+                                cursor: 'pointer'
+                            }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                <div style={{ fontSize: '48px', marginBottom: '12px' }}>🍕</div>
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#06b6d4' }}>{stats.totalProducts}</div>
+                                <div style={{ color: '#a0a0c0', marginTop: '8px', fontSize: '14px' }}>Total Products</div>
                             </div>
-                            <div style={{ background: 'white', borderRadius: '15px', padding: '20px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '40px' }}>📅</div>
-                                <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#f59e0b' }}>{stats.todayOrders}</div>
-                                <div>Today's Orders</div>
+                            <div style={{
+                                background: 'linear-gradient(135deg, #1a1a3e 0%, #1e1e4a 100%)',
+                                borderRadius: '20px',
+                                padding: '24px',
+                                border: '1px solid rgba(245, 158, 11, 0.2)',
+                                transition: 'transform 0.3s ease',
+                                cursor: 'pointer'
+                            }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                <div style={{ fontSize: '48px', marginBottom: '12px' }}>📅</div>
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#f59e0b' }}>{stats.todayOrders}</div>
+                                <div style={{ color: '#a0a0c0', marginTop: '8px', fontSize: '14px' }}>Today's Orders</div>
                             </div>
                         </div>
 
-                        <div style={{ background: 'white', borderRadius: '15px', padding: '20px' }}>
-                            <h3>Recent Orders</h3>
+                        {/* Recent Orders Table */}
+                        <div style={{
+                            background: '#1a1a3e',
+                            borderRadius: '20px',
+                            padding: '24px',
+                            border: '1px solid rgba(102, 126, 234, 0.2)'
+                        }}>
+                            <h3 style={{ marginBottom: '20px', color: 'white', fontSize: '18px' }}>Recent Orders</h3>
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                    <thead><tr style={{ borderBottom: '2px solid #f3f4f6' }}><th style={{ padding: '12px' }}>ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-                                    <tbody>{orders.slice(0, 5).map(order => (
-                                        <tr key={order.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                                            <td style={{ padding: '12px' }}>#{order.id}</td>
-                                            <td>{order.user?.name || 'Guest'}</td>
-                                            <td>₹{order.grandTotal}</td>
-                                            <td><span style={{ backgroundColor: `${getStatusColor(order.status)}20`, color: getStatusColor(order.status), padding: '4px 10px', borderRadius: '12px' }}>{order.status}</span></td>
-                                            <td><select value={order.status} onChange={(e) => updateOrderStatusHandler(order.id, e.target.value)} style={{ padding: '5px', borderRadius: '5px' }}><option value="PENDING">Pending</option><option value="CONFIRMED">Confirmed</option><option value="PREPARING">Preparing</option><option value="OUT_FOR_DELIVERY">Out for Delivery</option><option value="DELIVERED">Delivered</option><option value="CANCELLED">Cancelled</option></select></td>
+                                    <thead>
+                                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                            <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Order ID</th>
+                                            <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Customer</th>
+                                            <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Amount</th>
+                                            <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Status</th>
+                                            <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Action</th>
                                         </tr>
-                                    ))}</tbody>
+                                    </thead>
+                                    <tbody>
+                                        {orders.slice(0, 5).map(order => (
+                                            <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <td style={{ padding: '12px', color: '#fff' }}>#{order.id}</td>
+                                                <td style={{ padding: '12px', color: '#c0c0e0' }}>{order.user?.name || 'Guest'}</td>
+                                                <td style={{ padding: '12px', color: '#10b981', fontWeight: '600' }}>₹{order.grandTotal}</td>
+                                                <td style={{ padding: '12px' }}>
+                                                    <span style={{
+                                                        background: `${getStatusColor(order.status)}20`,
+                                                        color: getStatusColor(order.status),
+                                                        padding: '4px 12px',
+                                                        borderRadius: '20px',
+                                                        fontSize: '12px',
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '5px'
+                                                    }}>
+                                                        {getStatusIcon(order.status)} {order.status}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '12px' }}>
+                                                    <select
+                                                        value={order.status}
+                                                        onChange={(e) => updateOrderStatusHandler(order.id, e.target.value)}
+                                                        style={{
+                                                            padding: '6px 12px',
+                                                            borderRadius: '8px',
+                                                            background: '#2a2a5e',
+                                                            color: 'white',
+                                                            border: '1px solid #3a3a6e',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <option value="PENDING">Pending</option>
+                                                        <option value="CONFIRMED">Confirmed</option>
+                                                        <option value="PREPARING">Preparing</option>
+                                                        <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                                                        <option value="DELIVERED">Delivered</option>
+                                                        <option value="CANCELLED">Cancelled</option>
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* Orders Tab - Full Table */}
+                {/* Orders Tab */}
                 {activeTab === 'orders' && (
-                    <div style={{ background: 'white', borderRadius: '15px', padding: '20px' }}>
-                        <h3>All Orders</h3>
+                    <div style={{
+                        background: '#1a1a3e',
+                        borderRadius: '20px',
+                        padding: '24px',
+                        border: '1px solid rgba(102, 126, 234, 0.2)'
+                    }}>
+                        <h3 style={{ marginBottom: '20px', color: 'white', fontSize: '18px' }}>All Orders</h3>
                         <div style={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead><tr style={{ borderBottom: '2px solid #f3f4f6' }}><th>ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
-                                <tbody>{orders.map(order => (
-                                    <tr key={order.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                                        <td style={{ padding: '12px' }}>#{order.id}</td>
-                                        <td>{order.user?.name || 'Guest'}</td>
-                                        <td>₹{order.grandTotal}</td>
-                                        <td><span style={{ backgroundColor: `${getStatusColor(order.status)}20`, color: getStatusColor(order.status), padding: '4px 10px', borderRadius: '12px' }}>{order.status}</span></td>
-                                        <td>{new Date(order.orderedAt).toLocaleDateString()}</td>
-                                        <td><select value={order.status} onChange={(e) => updateOrderStatusHandler(order.id, e.target.value)}><option value="PENDING">Pending</option><option value="CONFIRMED">Confirmed</option><option value="PREPARING">Preparing</option><option value="OUT_FOR_DELIVERY">Out for Delivery</option><option value="DELIVERED">Delivered</option><option value="CANCELLED">Cancelled</option></select></td>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>ID</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Customer</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Amount</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Payment</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Status</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Date</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Action</th>
                                     </tr>
-                                ))}</tbody>
+                                </thead>
+                                <tbody>
+                                    {orders.map(order => (
+                                        <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <td style={{ padding: '12px', color: '#fff' }}>#{order.id}</td>
+                                            <td style={{ padding: '12px', color: '#c0c0e0' }}>{order.user?.name || 'Guest'}</td>
+                                            <td style={{ padding: '12px', color: '#10b981', fontWeight: '600' }}>₹{order.grandTotal}</td>
+                                            <td style={{ padding: '12px', color: '#c0c0e0' }}>{order.paymentMethod}</td>
+                                            <td style={{ padding: '12px' }}>
+                                                <span style={{
+                                                    background: `${getStatusColor(order.status)}20`,
+                                                    color: getStatusColor(order.status),
+                                                    padding: '4px 12px',
+                                                    borderRadius: '20px',
+                                                    fontSize: '12px',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '5px'
+                                                }}>
+                                                    {getStatusIcon(order.status)} {order.status}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '12px', color: '#c0c0e0' }}>{new Date(order.orderedAt).toLocaleDateString()}</td>
+                                            <td style={{ padding: '12px' }}>
+                                                <select
+                                                    value={order.status}
+                                                    onChange={(e) => updateOrderStatusHandler(order.id, e.target.value)}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        borderRadius: '8px',
+                                                        background: '#2a2a5e',
+                                                        color: 'white',
+                                                        border: '1px solid #3a3a6e',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    <option value="PENDING">Pending</option>
+                                                    <option value="CONFIRMED">Confirmed</option>
+                                                    <option value="PREPARING">Preparing</option>
+                                                    <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                                                    <option value="DELIVERED">Delivered</option>
+                                                    <option value="CANCELLED">Cancelled</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -279,28 +452,170 @@ const AdminDashboard = () => {
 
                 {/* Products Tab */}
                 {activeTab === 'products' && (
-                    <div style={{ background: 'white', borderRadius: '15px', padding: '20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                            <h3>Products</h3>
-                            <button onClick={() => setShowAddProduct(!showAddProduct)} style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer' }}>+ Add Product</button>
+                    <div style={{
+                        background: '#1a1a3e',
+                        borderRadius: '20px',
+                        padding: '24px',
+                        border: '1px solid rgba(102, 126, 234, 0.2)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '15px' }}>
+                            <h3 style={{ color: 'white', fontSize: '18px' }}>Products Management</h3>
+                            <button
+                                onClick={() => setShowAddProduct(!showAddProduct)}
+                                style={{
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '10px 24px',
+                                    borderRadius: '30px',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'transform 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                                onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                            >
+                                + Add New Product
+                            </button>
                         </div>
+
                         {showAddProduct && (
-                            <div style={{ background: '#f9fafb', padding: '20px', borderRadius: '10px', marginBottom: '20px' }}>
-                                <h4>New Product</h4>
-                                <div style={{ display: 'grid', gap: '15px' }}>
-                                    <input type="text" placeholder="Name" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} />
-                                    <input type="number" placeholder="Price" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} />
-                                    <textarea placeholder="Description" value={newProduct.description} onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} />
-                                    <button onClick={addProductHandler} style={{ backgroundColor: '#667eea', color: 'white', padding: '10px', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Save</button>
+                            <div style={{
+                                background: '#2a2a5e',
+                                padding: '24px',
+                                borderRadius: '16px',
+                                marginBottom: '24px'
+                            }}>
+                                <h4 style={{ color: 'white', marginBottom: '16px' }}>Add New Product</h4>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Product Name"
+                                        value={newProduct.name}
+                                        onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                                        style={{
+                                            padding: '12px 16px',
+                                            borderRadius: '10px',
+                                            background: '#1a1a3e',
+                                            border: '1px solid #3a3a6e',
+                                            color: 'white',
+                                            outline: 'none'
+                                        }}
+                                    />
+                                    <input
+                                        type="number"
+                                        placeholder="Price"
+                                        value={newProduct.price}
+                                        onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                                        style={{
+                                            padding: '12px 16px',
+                                            borderRadius: '10px',
+                                            background: '#1a1a3e',
+                                            border: '1px solid #3a3a6e',
+                                            color: 'white',
+                                            outline: 'none'
+                                        }}
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Image URL (optional)"
+                                        value={newProduct.imageUrl}
+                                        onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
+                                        style={{
+                                            padding: '12px 16px',
+                                            borderRadius: '10px',
+                                            background: '#1a1a3e',
+                                            border: '1px solid #3a3a6e',
+                                            color: 'white',
+                                            outline: 'none'
+                                        }}
+                                    />
+                                    <textarea
+                                        placeholder="Description"
+                                        value={newProduct.description}
+                                        onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                                        rows="2"
+                                        style={{
+                                            padding: '12px 16px',
+                                            borderRadius: '10px',
+                                            background: '#1a1a3e',
+                                            border: '1px solid #3a3a6e',
+                                            color: 'white',
+                                            outline: 'none',
+                                            resize: 'vertical'
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                                    <button
+                                        onClick={addProductHandler}
+                                        style={{
+                                            background: '#667eea',
+                                            color: 'white',
+                                            padding: '10px 24px',
+                                            border: 'none',
+                                            borderRadius: '10px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Save Product
+                                    </button>
+                                    <button
+                                        onClick={() => setShowAddProduct(false)}
+                                        style={{
+                                            background: '#ef4444',
+                                            color: 'white',
+                                            padding: '10px 24px',
+                                            border: 'none',
+                                            borderRadius: '10px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
                             </div>
                         )}
+
                         <div style={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Action</th></tr></thead>
-                                <tbody>{products.map(product => (
-                                    <tr key={product.id}><td>{product.id}</td><td>{product.name}</td><td>₹{product.price}</td><td><button onClick={() => deleteProductHandler(product.id)} style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '5px 15px', borderRadius: '5px', cursor: 'pointer' }}>Delete</button></td></tr>
-                                ))}</tbody>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>ID</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Name</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Price</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {products.map(product => (
+                                        <tr key={product.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <td style={{ padding: '12px', color: '#fff' }}>{product.id}</td>
+                                            <td style={{ padding: '12px', color: '#c0c0e0' }}>{product.name}</td>
+                                            <td style={{ padding: '12px', color: '#10b981', fontWeight: '600' }}>₹{product.price}</td>
+                                            <td style={{ padding: '12px' }}>
+                                                <button
+                                                    onClick={() => deleteProductHandler(product.id)}
+                                                    style={{
+                                                        background: '#ef4444',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '6px 16px',
+                                                        borderRadius: '8px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '12px',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => e.target.style.background = '#dc2626'}
+                                                    onMouseLeave={(e) => e.target.style.background = '#ef4444'}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -308,20 +623,44 @@ const AdminDashboard = () => {
 
                 {/* Users Tab */}
                 {activeTab === 'users' && (
-                    <div style={{ background: 'white', borderRadius: '15px', padding: '20px' }}>
-                        <h3>Users</h3>
+                    <div style={{
+                        background: '#1a1a3e',
+                        borderRadius: '20px',
+                        padding: '24px',
+                        border: '1px solid rgba(102, 126, 234, 0.2)'
+                    }}>
+                        <h3 style={{ marginBottom: '20px', color: 'white', fontSize: '18px' }}>User Management</h3>
                         <div style={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th></tr></thead>
-                                <tbody>{users.map(user => (
-                                    <tr key={user.id}><td>{user.id}</td><td>{user.name}</td><td>{user.email}</td><td>{user.phone || '-'}</td></tr>
-                                ))}</tbody>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>ID</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Name</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Email</th>
+                                        <th style={{ padding: '12px', textAlign: 'left', color: '#a0a0c0' }}>Phone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {users.map(user => (
+                                        <tr key={user.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <td style={{ padding: '12px', color: '#fff' }}>{user.id}</td>
+                                            <td style={{ padding: '12px', color: '#c0c0e0' }}>{user.name}</td>
+                                            <td style={{ padding: '12px', color: '#c0c0e0' }}>{user.email}</td>
+                                            <td style={{ padding: '12px', color: '#c0c0e0' }}>{user.phone || '-'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 )}
             </div>
-            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+            <style>{`
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `}</style>
         </div>
     );
 };

@@ -43,12 +43,10 @@ public class UserService {
         return userRepository.save(user);
     }
     
-    // ADD THIS METHOD - Save user directly
     public User save(User user) {
         return userRepository.save(user);
     }
     
-    // ADD THIS METHOD - Update user profile with Map data
     public User updateUserProfile(Long userId, String name, String phone, String address) {
         User user = findById(userId);
         if (name != null && !name.isEmpty()) {
@@ -64,6 +62,42 @@ public class UserService {
     }
     
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        List<User> users = userRepository.findAll();
+        // Remove passwords for security
+        users.forEach(user -> user.setPassword(null));
+        return users;
+    }
+    
+    // ✅ ADD THIS METHOD - For dashboard stats
+    public long getTotalUsersCount() {
+        return userRepository.count();
+    }
+    
+    // ✅ ADD THIS METHOD - To fix/create admin user
+    public User createOrUpdateAdmin() {
+        Optional<User> existingAdmin = findByEmail("admin@marvelkitchen.com");
+        
+        User admin;
+        if (existingAdmin.isPresent()) {
+            admin = existingAdmin.get();
+            // Update existing admin
+            admin.setName("Admin");
+            admin.setRole(User.Role.ADMIN);
+            admin.setPhone("9876543210");
+            admin.setAddress("Admin Address");
+        } else {
+            // Create new admin
+            admin = new User();
+            admin.setName("Admin");
+            admin.setEmail("admin@marvelkitchen.com");
+            admin.setPhone("9876543210");
+            admin.setAddress("Admin Address");
+            admin.setRole(User.Role.ADMIN);
+        }
+        
+        // Set encrypted password for "admin123"
+        admin.setPassword(passwordEncoder.encode("admin123"));
+        
+        return userRepository.save(admin);
     }
 }

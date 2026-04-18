@@ -27,6 +27,11 @@ public class ProductService {
         return productRepository.findAll();
     }
     
+    // ✅ ADD THIS METHOD - For dashboard stats
+    public long getTotalProductsCount() {
+        return productRepository.count();
+    }
+    
     // Get product by id
     public Product getProductById(Long id) {
         return productRepository.findById(id)

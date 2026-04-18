@@ -46,7 +46,17 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/products/**").permitAll()
+                // Public endpoints
+                .requestMatchers("/api/auth/**", "/api/products/**", "/api/categories/**").permitAll()
+                
+                // ✅ Admin endpoints - FIXED
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                
+                // User endpoints - authenticated
+                .requestMatchers("/api/cart/**").authenticated()
+                .requestMatchers("/api/orders/**").authenticated()
+                .requestMatchers("/api/user/**").authenticated()
+                
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

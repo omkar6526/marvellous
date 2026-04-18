@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -143,5 +144,40 @@ public class OrderService {
         stats.put("todayOrders", orderRepository.findTodayOrders().size());
         
         return stats;
+    }
+    
+    // ✅ ADD THESE METHODS FOR ADMIN DASHBOARD
+    
+    // Get total orders count
+    public long getTotalOrdersCount() {
+        return orderRepository.count();
+    }
+    
+    // Get pending orders count
+    public long getPendingOrdersCount() {
+        return orderRepository.countByStatus(Order.OrderStatus.PENDING);
+    }
+    
+    // Get total revenue
+    public double getTotalRevenue() {
+        Double revenue = orderRepository.getTotalRevenue();
+        return revenue != null ? revenue : 0.0;
+    }
+    
+    // Get today's orders count
+    public long getTodayOrdersCount() {
+        return orderRepository.findTodayOrders().size();
+    }
+    
+    // Get today's revenue
+    public double getTodayRevenue() {
+        Double revenue = orderRepository.getTodayRevenue();
+        return revenue != null ? revenue : 0.0;
+    }
+    
+    // Get user orders by user ID (for admin)
+    public List<Order> getUserOrdersByUserId(Long userId) {
+        User user = userService.findById(userId);
+        return orderRepository.findByUserOrderByOrderedAtDesc(user);
     }
 }

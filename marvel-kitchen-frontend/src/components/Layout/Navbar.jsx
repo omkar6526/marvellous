@@ -20,16 +20,17 @@ const Navbar = () => {
 
     return (
         <nav style={{
-            backgroundColor: 'white',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            background: '#0f0f23',
+            borderBottom: '1px solid rgba(102, 126, 234, 0.2)',
             position: 'sticky',
             top: 0,
-            zIndex: 1000
+            zIndex: 1000,
+            backdropFilter: 'blur(10px)',
         }}>
             <div style={{
-                maxWidth: '1200px',
+                maxWidth: '1400px',
                 margin: '0 auto',
-                padding: '15px 20px',
+                padding: '16px 30px',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -40,69 +41,112 @@ const Navbar = () => {
                 <Link to="/" style={{
                     fontSize: '24px',
                     fontWeight: 'bold',
-                    color: '#667eea',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
                     textDecoration: 'none',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '5px'
+                    gap: '8px'
                 }}>
-                    🍔 Marvel Kitchen
+                    <span style={{ fontSize: '28px' }}>🍔</span>
+                    Marvel Kitchen
                 </Link>
 
                 {/* Navigation Links */}
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '20px',
+                    gap: '8px',
                     flexWrap: 'wrap'
                 }}>
                     <Link to="/" style={{
-                        color: '#333',
+                        color: '#c0c0e0',
                         textDecoration: 'none',
-                        transition: 'color 0.2s'
-                    }} onMouseEnter={(e) => e.target.style.color = '#667eea'}
-                       onMouseLeave={(e) => e.target.style.color = '#333'}>
-                        Home
+                        padding: '8px 16px',
+                        borderRadius: '10px',
+                        transition: 'all 0.3s ease',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    }} onMouseEnter={(e) => {
+                        e.target.style.color = 'white';
+                        e.target.style.background = 'rgba(102, 126, 234, 0.2)';
+                    }}
+                       onMouseLeave={(e) => {
+                        e.target.style.color = '#c0c0e0';
+                        e.target.style.background = 'transparent';
+                    }}>
+                        🏠 Home
                     </Link>
                     
                     <Link to="/menu" style={{
-                        color: '#333',
+                        color: '#c0c0e0',
                         textDecoration: 'none',
-                        transition: 'color 0.2s'
-                    }} onMouseEnter={(e) => e.target.style.color = '#667eea'}
-                       onMouseLeave={(e) => e.target.style.color = '#333'}>
-                        Menu
+                        padding: '8px 16px',
+                        borderRadius: '10px',
+                        transition: 'all 0.3s ease',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    }} onMouseEnter={(e) => {
+                        e.target.style.color = 'white';
+                        e.target.style.background = 'rgba(102, 126, 234, 0.2)';
+                    }}
+                       onMouseLeave={(e) => {
+                        e.target.style.color = '#c0c0e0';
+                        e.target.style.background = 'transparent';
+                    }}>
+                        🍕 Menu
                     </Link>
                     
-                    {isLoggedIn && (
+                    {isLoggedIn && userRole !== 'ADMIN' && (
                         <Link to="/my-orders" style={{
-                            color: '#333',
+                            color: '#c0c0e0',
                             textDecoration: 'none',
-                            transition: 'color 0.2s'
-                        }} onMouseEnter={(e) => e.target.style.color = '#667eea'}
-                           onMouseLeave={(e) => e.target.style.color = '#333'}>
-                            My Orders
+                            padding: '8px 16px',
+                            borderRadius: '10px',
+                            transition: 'all 0.3s ease',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                        }} onMouseEnter={(e) => {
+                            e.target.style.color = 'white';
+                            e.target.style.background = 'rgba(102, 126, 234, 0.2)';
+                        }}
+                           onMouseLeave={(e) => {
+                            e.target.style.color = '#c0c0e0';
+                            e.target.style.background = 'transparent';
+                        }}>
+                            📦 My Orders
                         </Link>
                     )}
                     
                     <Link to="/cart" style={{
-                        color: '#333',
+                        color: '#c0c0e0',
                         textDecoration: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '10px',
+                        transition: 'all 0.3s ease',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '5px',
-                        transition: 'color 0.2s'
-                    }} onMouseEnter={(e) => e.target.style.color = '#667eea'}
-                       onMouseLeave={(e) => e.target.style.color = '#333'}>
+                        gap: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    }} onMouseEnter={(e) => {
+                        e.target.style.color = 'white';
+                        e.target.style.background = 'rgba(102, 126, 234, 0.2)';
+                    }}
+                       onMouseLeave={(e) => {
+                        e.target.style.color = '#c0c0e0';
+                        e.target.style.background = 'transparent';
+                    }}>
                         🛒 Cart
                         {cartCount > 0 && (
                             <span style={{
-                                backgroundColor: '#667eea',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                 color: 'white',
-                                borderRadius: '50%',
-                                padding: '2px 6px',
-                                fontSize: '12px',
-                                marginLeft: '5px'
+                                borderRadius: '20px',
+                                padding: '2px 8px',
+                                fontSize: '11px',
+                                fontWeight: 'bold'
                             }}>
                                 {cartCount}
                             </span>
@@ -112,114 +156,177 @@ const Navbar = () => {
                     {!isLoggedIn ? (
                         <>
                             <Link to="/login" style={{
-                                backgroundColor: '#667eea',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                 color: 'white',
-                                padding: '8px 20px',
-                                borderRadius: '25px',
+                                padding: '8px 24px',
+                                borderRadius: '30px',
                                 textDecoration: 'none',
-                                transition: 'transform 0.2s'
-                            }} onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-                               onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                transition: 'all 0.3s ease',
+                                marginLeft: '8px'
+                            }} onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                               onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}>
                                 Login
                             </Link>
                             
                             <Link to="/register" style={{
                                 border: '2px solid #667eea',
                                 color: '#667eea',
-                                padding: '8px 20px',
-                                borderRadius: '25px',
+                                background: 'transparent',
+                                padding: '8px 24px',
+                                borderRadius: '30px',
                                 textDecoration: 'none',
-                                transition: 'transform 0.2s'
-                            }} onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-                               onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                transition: 'all 0.3s ease'
+                            }} onMouseEnter={(e) => {
+                                e.target.style.background = 'rgba(102, 126, 234, 0.1)';
+                                e.target.style.transform = 'translateY(-2px)';
+                            }}
+                               onMouseLeave={(e) => {
+                                e.target.style.background = 'transparent';
+                                e.target.style.transform = 'translateY(0)';
+                            }}>
                                 Register
                             </Link>
                         </>
                     ) : (
                         <>
                             {/* Profile Dropdown */}
-                            <div style={{ position: 'relative' }} className="dropdown">
+                            <div style={{ position: 'relative', marginLeft: '8px' }} className="dropdown">
                                 <button style={{
-                                    backgroundColor: '#f3f4f6',
-                                    border: 'none',
-                                    padding: '8px 15px',
-                                    borderRadius: '25px',
+                                    background: 'linear-gradient(135deg, #1a1a3e 0%, #1e1e4a 100%)',
+                                    border: '1px solid rgba(102, 126, 234, 0.3)',
+                                    padding: '8px 20px',
+                                    borderRadius: '30px',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '8px',
+                                    gap: '10px',
                                     fontSize: '14px',
-                                    transition: 'background-color 0.2s'
-                                }} onMouseEnter={(e) => e.target.style.backgroundColor = '#e5e7eb'}
-                                   onMouseLeave={(e) => e.target.style.backgroundColor = '#f3f4f6'}>
-                                    <span>👤</span>
-                                    <span>Hi, {userName || 'User'}</span>
-                                    <span>▼</span>
+                                    fontWeight: '500',
+                                    color: 'white',
+                                    transition: 'all 0.3s ease'
+                                }} onMouseEnter={(e) => {
+                                    e.target.style.background = '#2a2a5e';
+                                    e.target.style.transform = 'translateY(-2px)';
+                                }}
+                                   onMouseLeave={(e) => {
+                                    e.target.style.background = '#1a1a3e';
+                                    e.target.style.transform = 'translateY(0)';
+                                }}>
+                                    <span style={{ fontSize: '16px' }}>👤</span>
+                                    <span>{userName || 'User'}</span>
+                                    <span style={{ fontSize: '12px' }}>▼</span>
                                 </button>
                                 
                                 <div style={{
                                     position: 'absolute',
-                                    top: '100%',
+                                    top: 'calc(100% + 10px)',
                                     right: 0,
-                                    backgroundColor: 'white',
-                                    borderRadius: '10px',
-                                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-                                    minWidth: '200px',
+                                    background: '#1a1a3e',
+                                    borderRadius: '16px',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+                                    minWidth: '240px',
                                     display: 'none',
-                                    zIndex: 1000
+                                    zIndex: 1000,
+                                    border: '1px solid rgba(102, 126, 234, 0.2)',
+                                    overflow: 'hidden'
                                 }} className="dropdown-menu">
+                                    <div style={{
+                                        padding: '16px 20px',
+                                        borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                        background: 'linear-gradient(135deg, #1e1e4a 0%, #1a1a3e 100%)'
+                                    }}>
+                                        <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>{userName}</div>
+                                        <div style={{ fontSize: '12px', color: '#a0a0c0' }}>{localStorage.getItem('email')}</div>
+                                    </div>
+                                    
                                     <Link to="/profile" style={{
-                                        display: 'block',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
                                         padding: '12px 20px',
-                                        color: '#333',
+                                        color: '#c0c0e0',
                                         textDecoration: 'none',
-                                        borderBottom: '1px solid #eee',
-                                        transition: 'background-color 0.2s'
-                                    }} onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
-                                       onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}>
-                                        👤 My Profile
+                                        transition: 'all 0.2s ease',
+                                        fontSize: '14px'
+                                    }} onMouseEnter={(e) => {
+                                        e.target.style.background = '#2a2a5e';
+                                        e.target.style.color = 'white';
+                                    }}
+                                       onMouseLeave={(e) => {
+                                        e.target.style.background = 'transparent';
+                                        e.target.style.color = '#c0c0e0';
+                                    }}>
+                                        <span>👤</span> My Profile
                                     </Link>
                                     
                                     {userRole === 'ADMIN' && (
                                         <Link to="/admin/dashboard" style={{
-                                            display: 'block',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '12px',
                                             padding: '12px 20px',
-                                            color: '#333',
+                                            color: '#c0c0e0',
                                             textDecoration: 'none',
-                                            borderBottom: '1px solid #eee',
-                                            transition: 'background-color 0.2s'
-                                        }} onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
-                                           onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}>
-                                            ⚙️ Admin Dashboard
+                                            transition: 'all 0.2s ease',
+                                            fontSize: '14px'
+                                        }} onMouseEnter={(e) => {
+                                            e.target.style.background = '#2a2a5e';
+                                            e.target.style.color = 'white';
+                                        }}
+                                           onMouseLeave={(e) => {
+                                            e.target.style.background = 'transparent';
+                                            e.target.style.color = '#c0c0e0';
+                                        }}>
+                                            <span>⚙️</span> Admin Dashboard
                                         </Link>
                                     )}
                                     
                                     <Link to="/my-orders" style={{
-                                        display: 'block',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
                                         padding: '12px 20px',
-                                        color: '#333',
+                                        color: '#c0c0e0',
                                         textDecoration: 'none',
-                                        borderBottom: '1px solid #eee',
-                                        transition: 'background-color 0.2s'
-                                    }} onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
-                                       onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}>
-                                        📦 My Orders
+                                        transition: 'all 0.2s ease',
+                                        fontSize: '14px'
+                                    }} onMouseEnter={(e) => {
+                                        e.target.style.background = '#2a2a5e';
+                                        e.target.style.color = 'white';
+                                    }}
+                                       onMouseLeave={(e) => {
+                                        e.target.style.background = 'transparent';
+                                        e.target.style.color = '#c0c0e0';
+                                    }}>
+                                        <span>📦</span> My Orders
                                     </Link>
+                                    
+                                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }}></div>
                                     
                                     <button onClick={handleLogout} style={{
                                         width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
                                         padding: '12px 20px',
-                                        backgroundColor: 'white',
+                                        background: 'transparent',
                                         border: 'none',
                                         textAlign: 'left',
                                         cursor: 'pointer',
                                         color: '#ef4444',
-                                        borderBottomLeftRadius: '10px',
-                                        borderBottomRightRadius: '10px',
-                                        transition: 'background-color 0.2s'
-                                    }} onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
-                                       onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}>
-                                        🚪 Logout
+                                        fontSize: '14px',
+                                        transition: 'all 0.2s ease'
+                                    }} onMouseEnter={(e) => {
+                                        e.target.style.background = '#2a2a5e';
+                                    }}
+                                       onMouseLeave={(e) => {
+                                        e.target.style.background = 'transparent';
+                                    }}>
+                                        <span>🚪</span> Logout
                                     </button>
                                 </div>
                             </div>
@@ -232,6 +339,18 @@ const Navbar = () => {
             <style>{`
                 .dropdown:hover .dropdown-menu {
                     display: block !important;
+                    animation: fadeIn 0.3s ease;
+                }
+                
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
                 }
                 
                 @media (max-width: 768px) {
@@ -241,7 +360,22 @@ const Navbar = () => {
                         left: 50% !important;
                         transform: translateX(-50%) !important;
                         width: 90% !important;
-                        max-width: 300px !important;
+                        max-width: 320px !important;
+                    }
+                    
+                    nav > div {
+                        padding: 15px 20px !important;
+                    }
+                }
+                
+                @media (max-width: 640px) {
+                    nav > div {
+                        flex-direction: column;
+                        text-align: center;
+                    }
+                    
+                    .nav-links {
+                        justify-content: center;
                     }
                 }
             `}</style>
