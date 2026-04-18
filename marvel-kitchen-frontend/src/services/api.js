@@ -60,4 +60,8 @@ export const getAllUsers = () => api.get('/admin/users');
 
 export const getUserOrders = (userId) => api.get(`/admin/users/${userId}/orders`);
 
+// ✅ ADD THIS - Toggle Product Availability
+export const toggleProductAvailability = (productId) => 
+    api.put(`/admin/products/${productId}/toggle`);
+
 export default api;

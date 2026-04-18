@@ -3,6 +3,7 @@ package com.marvelkitchen.controller;
 import com.marvelkitchen.entity.Order;
 import com.marvelkitchen.entity.Product;
 import com.marvelkitchen.entity.User;
+import com.marvelkitchen.repository.OrderItemRepository;
 import com.marvelkitchen.service.OrderService;
 import com.marvelkitchen.service.ProductService;
 import com.marvelkitchen.service.UserService;
@@ -28,6 +29,9 @@ public class AdminController {
     
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private OrderItemRepository orderItemRepository;  // ✅ Add this
     
     // 1. Dashboard Statistics
     @GetMapping("/stats")
@@ -61,16 +65,18 @@ public class AdminController {
         }
     }
     
-    // 4. Get All Products
+    // 4. Get All Products (Only Active products for frontend)
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+        List<Product> products = productService.getAllProducts();
+        return ResponseEntity.ok(products);
     }
     
     // 5. Add New Product
     @PostMapping("/products")
     public ResponseEntity<?> addProduct(@RequestBody Product product) {
         try {
+            product.setIsAvailable(true);  // New products are active by default
             Product savedProduct = productService.addProduct(product);
             return ResponseEntity.ok(savedProduct);
         } catch (Exception e) {
@@ -90,14 +96,41 @@ public class AdminController {
         }
     }
     
-    // 7. Delete Product
+    // 7. Delete Product - Smart Delete (Soft delete if has orders)
     @DeleteMapping("/products/{productId}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long productId) {
         try {
-            productService.deleteProduct(productId);
-            return ResponseEntity.ok(Map.of("message", "Product deleted successfully"));
+            // Check if product exists in any order
+            boolean hasOrders = orderItemRepository.existsByProductId(productId);
+            
+            if (hasOrders) {
+                // Product has orders - Just disable it (Soft Delete)
+                Product product = productService.getProductById(productId);
+                product.setIsAvailable(false);  // Hide from menu
+                productService.updateProduct(productId, product);
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("action", "disabled");
+                response.put("message", "Product has existing orders. It has been hidden from menu.");
+                response.put("productId", productId);
+                return ResponseEntity.ok(response);
+            } else {
+                // No orders - Safe to delete permanently
+                productService.deleteProduct(productId);
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("action", "deleted");
+                response.put("message", "Product deleted successfully");
+                response.put("productId", productId);
+                return ResponseEntity.ok(response);
+            }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            Map<String, String> error = new HashMap<>();
+            error.put("success", "false");
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
     }
     
@@ -116,6 +149,21 @@ public class AdminController {
         try {
             List<Order> orders = orderService.getUserOrders(userId);
             return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    // 10. Toggle Product Availability (Enable/Disable)
+    @PutMapping("/products/{productId}/toggle")
+    public ResponseEntity<?> toggleProductAvailability(@PathVariable Long productId) {
+        try {
+            Product product = productService.toggleAvailability(productId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("isAvailable", product.getIsAvailable());
+            response.put("message", product.getIsAvailable() ? "Product enabled" : "Product disabled");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
