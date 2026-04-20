@@ -6,7 +6,6 @@ const CartPage = () => {
     const navigate = useNavigate();
     const { cartItems, totalAmount, removeItemFromCart } = useCart();
 
-    // ✅ No toast here - Context already handles it
     const handleRemoveItem = (productId) => {
         removeItemFromCart(productId);
     };
@@ -78,10 +77,7 @@ const CartPage = () => {
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 320px',
-                    gap: '30px',
-                    '@media (max-width: 768px)': {
-                        gridTemplateColumns: '1fr'
-                    }
+                    gap: '30px'
                 }}>
                     {/* Cart Items */}
                     <div style={{
@@ -118,19 +114,50 @@ const CartPage = () => {
                                     transition: 'background 0.3s ease'
                                 }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(102, 126, 234, 0.05)'}
                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                                    {/* Product Info */}
+                                    {/* Product Info with Image */}
                                     <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                        {/* Product Image */}
                                         <div style={{
                                             width: '60px',
                                             height: '60px',
-                                            background: 'linear-gradient(135deg, #2a2a5e 0%, #1e1e4a 100%)',
                                             borderRadius: '12px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontSize: '30px'
+                                            overflow: 'hidden',
+                                            background: '#2a2a5e',
+                                            flexShrink: 0
                                         }}>
-                                            {item.product.isVeg ? '🌱' : '🍖'}
+                                            {item.product.image_url ? (
+                                                <img 
+                                                    src={item.product.image_url}
+                                                    alt={item.product.name}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'cover'
+                                                    }}
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                        const parent = e.target.parentElement;
+                                                        if (parent) {
+                                                            parent.style.display = 'flex';
+                                                            parent.style.alignItems = 'center';
+                                                            parent.style.justifyContent = 'center';
+                                                            parent.style.fontSize = '30px';
+                                                            parent.innerHTML = item.product.isVeg ? '🌱' : '🍖';
+                                                        }
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontSize: '30px'
+                                                }}>
+                                                    {item.product.isVeg ? '🌱' : '🍖'}
+                                                </div>
+                                            )}
                                         </div>
                                         <div>
                                             <h4 style={{ color: 'white', marginBottom: '4px', fontSize: '16px' }}>{item.product.name}</h4>

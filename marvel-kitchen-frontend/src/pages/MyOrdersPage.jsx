@@ -75,6 +75,14 @@ const MyOrdersPage = () => {
         }
     };
 
+    // Helper function to get image URL with fallback
+    const getImageUrl = (productName, imageUrl) => {
+        if (imageUrl) return imageUrl;
+        // Fallback: generate path from product name
+        const nameSlug = productName.toLowerCase().replace(/ /g, '-');
+        return `/images/products/${nameSlug}.png`;
+    };
+
     if (loading) {
         return (
             <div style={{
@@ -312,23 +320,59 @@ const MyOrdersPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Items Preview */}
+                                {/* Items Preview with Images */}
                                 <div style={{
                                     display: 'flex',
                                     gap: '10px',
                                     flexWrap: 'wrap',
-                                    marginBottom: '15px'
+                                    marginBottom: '15px',
+                                    alignItems: 'center'
                                 }}>
                                     {order.items?.slice(0, 3).map((item, idx) => (
-                                        <span key={idx} style={{
+                                        <div key={idx} style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
                                             background: '#2a2a5e',
                                             padding: '5px 12px',
-                                            borderRadius: '15px',
-                                            fontSize: '13px',
-                                            color: '#c0c0e0'
+                                            borderRadius: '15px'
                                         }}>
-                                            {item.quantity}x {item.productName}
-                                        </span>
+                                            {/* Product Image Thumbnail */}
+                                            <div style={{
+                                                width: '30px',
+                                                height: '30px',
+                                                borderRadius: '8px',
+                                                overflow: 'hidden',
+                                                background: '#1a1a3e'
+                                            }}>
+                                                <img 
+                                                    src={getImageUrl(item.productName, item.imageUrl)}
+                                                    alt={item.productName}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'cover'
+                                                    }}
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                        const parent = e.target.parentElement;
+                                                        if (parent) {
+                                                            parent.style.display = 'flex';
+                                                            parent.style.alignItems = 'center';
+                                                            parent.style.justifyContent = 'center';
+                                                            parent.style.fontSize = '16px';
+                                                            parent.innerHTML = '🍕';
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                            <span style={{
+                                                fontSize: '13px',
+                                                color: '#c0c0e0'
+                                            }}>
+                                                {item.quantity}x {item.productName}
+                                            </span>
+                                        </div>
                                     ))}
                                     {order.items?.length > 3 && (
                                         <span style={{
@@ -368,20 +412,52 @@ const MyOrdersPage = () => {
                                     padding: '20px',
                                     background: '#2a2a5e'
                                 }}>
-                                    {/* All Items */}
+                                    {/* All Items with Images */}
                                     <h4 style={{ marginBottom: '15px', color: 'white' }}>Order Items</h4>
                                     <div style={{ marginBottom: '20px' }}>
                                         {order.items?.map((item, idx) => (
                                             <div key={idx} style={{
                                                 display: 'flex',
+                                                alignItems: 'center',
                                                 justifyContent: 'space-between',
                                                 padding: '10px 0',
                                                 borderBottom: '1px solid rgba(255,255,255,0.1)'
                                             }}>
-                                                <div>
-                                                    <div style={{ fontWeight: 'bold', color: 'white' }}>{item.productName}</div>
-                                                    <div style={{ fontSize: '12px', color: '#a0a0c0' }}>
-                                                        Quantity: {item.quantity}
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    {/* Product Image */}
+                                                    <div style={{
+                                                        width: '50px',
+                                                        height: '50px',
+                                                        borderRadius: '10px',
+                                                        overflow: 'hidden',
+                                                        background: '#1a1a3e'
+                                                    }}>
+                                                        <img 
+                                                            src={getImageUrl(item.productName, item.imageUrl)}
+                                                            alt={item.productName}
+                                                            style={{
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                objectFit: 'cover'
+                                                            }}
+                                                            onError={(e) => {
+                                                                e.target.style.display = 'none';
+                                                                const parent = e.target.parentElement;
+                                                                if (parent) {
+                                                                    parent.style.display = 'flex';
+                                                                    parent.style.alignItems = 'center';
+                                                                    parent.style.justifyContent = 'center';
+                                                                    parent.style.fontSize = '24px';
+                                                                    parent.innerHTML = '🍕';
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontWeight: 'bold', color: 'white' }}>{item.productName}</div>
+                                                        <div style={{ fontSize: '12px', color: '#a0a0c0' }}>
+                                                            Quantity: {item.quantity}
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div style={{ fontWeight: 'bold', color: '#10b981' }}>

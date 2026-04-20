@@ -28,6 +28,8 @@ public class ProductController {
             map.put("price", p.getPrice());
             map.put("isVeg", p.getIsVeg());
             map.put("isAvailable", p.getIsAvailable());
+            map.put("rating", p.getRating());  // ✅ Rating bhi add kar diya
+            map.put("image_url", p.getImageUrl());  // ✅ YEH IMPORTANT HAI!
             
             // Add category info safely
             if (p.getCategory() != null) {

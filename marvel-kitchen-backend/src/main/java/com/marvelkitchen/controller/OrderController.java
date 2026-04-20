@@ -2,6 +2,7 @@ package com.marvelkitchen.controller;
 
 import com.marvelkitchen.dto.OrderRequest;
 import com.marvelkitchen.entity.Order;
+import com.marvelkitchen.entity.OrderItem;
 import com.marvelkitchen.entity.User;
 import com.marvelkitchen.security.JwtUtil;
 import com.marvelkitchen.service.OrderService;
@@ -10,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -28,7 +27,6 @@ public class OrderController {
     @Autowired
     private JwtUtil jwtUtil;
     
-    // Fix: Properly extract user ID from token
     private Long getUserIdFromToken(String token) {
         String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
         String email = jwtUtil.extractEmail(jwt);
@@ -37,7 +35,7 @@ public class OrderController {
         return user.getId();
     }
     
-    // Place new order - Updated with Razorpay support
+    // Place new order
     @PostMapping("/place")
     public ResponseEntity<?> placeOrder(@RequestHeader("Authorization") String token,
                                         @RequestBody OrderRequest request) {
@@ -50,7 +48,6 @@ public class OrderController {
             System.out.println("Phone: " + request.getPhoneNumber());
             System.out.println("Payment: " + request.getPaymentMethod());
             
-            // For Razorpay, log payment details
             if ("RAZORPAY".equals(request.getPaymentMethod())) {
                 System.out.println("Razorpay Payment ID: " + request.getRazorpayPaymentId());
                 System.out.println("Razorpay Order ID: " + request.getRazorpayOrderId());
@@ -58,7 +55,6 @@ public class OrderController {
             
             Order order;
             
-            // Check if payment method is Razorpay
             if ("RAZORPAY".equals(request.getPaymentMethod())) {
                 order = orderService.placeOrderWithRazorpay(
                     userId,
@@ -78,7 +74,6 @@ public class OrderController {
                 );
             }
             
-            // Create simple response
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Order placed successfully!");
@@ -100,21 +95,88 @@ public class OrderController {
         }
     }
     
-    // Get user's orders
+    // Get user's orders - UPDATED with image_url in order items
     @GetMapping("/myorders")
-    public ResponseEntity<List<Order>> getMyOrders(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<Map<String, Object>>> getMyOrders(@RequestHeader("Authorization") String token) {
         Long userId = getUserIdFromToken(token);
-        return ResponseEntity.ok(orderService.getUserOrders(userId));
+        List<Order> orders = orderService.getUserOrders(userId);
+        
+        List<Map<String, Object>> response = new ArrayList<>();
+        
+        for (Order order : orders) {
+            Map<String, Object> orderMap = new HashMap<>();
+            orderMap.put("id", order.getId());
+            orderMap.put("orderId", order.getOrderId());
+            orderMap.put("totalAmount", order.getTotalAmount());
+            orderMap.put("deliveryCharge", order.getDeliveryCharge());
+            orderMap.put("tax", order.getTax());
+            orderMap.put("grandTotal", order.getGrandTotal());
+            orderMap.put("status", order.getStatus().toString());
+            orderMap.put("paymentMethod", order.getPaymentMethod());
+            orderMap.put("deliveryAddress", order.getDeliveryAddress());
+            orderMap.put("phoneNumber", order.getPhoneNumber());
+            orderMap.put("orderedAt", order.getOrderedAt());
+            orderMap.put("deliveredAt", order.getDeliveredAt());
+            
+            // Process order items with image_url
+            List<Map<String, Object>> itemsList = new ArrayList<>();
+            for (OrderItem item : order.getItems()) {
+                Map<String, Object> itemMap = new HashMap<>();
+                itemMap.put("id", item.getId());
+                itemMap.put("productId", item.getProduct().getId());
+                itemMap.put("productName", item.getProductName());
+                itemMap.put("quantity", item.getQuantity());
+                itemMap.put("price", item.getPrice());
+                // ✅ IMPORTANT: Add image_url from product
+                itemMap.put("imageUrl", item.getProduct().getImageUrl());
+                
+                itemsList.add(itemMap);
+            }
+            orderMap.put("items", itemsList);
+            
+            response.add(orderMap);
+        }
+        
+        return ResponseEntity.ok(response);
     }
     
-    // Get order details
+    // Get order details - UPDATED with image_url
     @GetMapping("/{orderId}")
     public ResponseEntity<?> getOrderDetails(@RequestHeader("Authorization") String token,
                                              @PathVariable Long orderId) {
         try {
             Long userId = getUserIdFromToken(token);
             Order order = orderService.getOrderDetails(orderId, userId);
-            return ResponseEntity.ok(order);
+            
+            Map<String, Object> orderMap = new HashMap<>();
+            orderMap.put("id", order.getId());
+            orderMap.put("orderId", order.getOrderId());
+            orderMap.put("totalAmount", order.getTotalAmount());
+            orderMap.put("deliveryCharge", order.getDeliveryCharge());
+            orderMap.put("tax", order.getTax());
+            orderMap.put("grandTotal", order.getGrandTotal());
+            orderMap.put("status", order.getStatus().toString());
+            orderMap.put("paymentMethod", order.getPaymentMethod());
+            orderMap.put("deliveryAddress", order.getDeliveryAddress());
+            orderMap.put("phoneNumber", order.getPhoneNumber());
+            orderMap.put("orderedAt", order.getOrderedAt());
+            orderMap.put("deliveredAt", order.getDeliveredAt());
+            
+            List<Map<String, Object>> itemsList = new ArrayList<>();
+            for (OrderItem item : order.getItems()) {
+                Map<String, Object> itemMap = new HashMap<>();
+                itemMap.put("id", item.getId());
+                itemMap.put("productId", item.getProduct().getId());
+                itemMap.put("productName", item.getProductName());
+                itemMap.put("quantity", item.getQuantity());
+                itemMap.put("price", item.getPrice());
+                itemMap.put("imageUrl", item.getProduct().getImageUrl());  // ✅ Add this
+                
+                itemsList.add(itemMap);
+            }
+            orderMap.put("items", itemsList);
+            
+            return ResponseEntity.ok(orderMap);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

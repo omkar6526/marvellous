@@ -18,7 +18,6 @@ const MenuPage = () => {
         try {
             const res = await getProducts();
             setProducts(res.data);
-            // Extract unique categories
             const uniqueCategories = ['all', ...new Set(res.data.map(p => p.category?.name || 'Uncategorized'))];
             setCategories(uniqueCategories);
         } catch (err) {
@@ -69,7 +68,6 @@ const MenuPage = () => {
             padding: '40px 20px'
         }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                     <h1 style={{
                         fontSize: 'clamp(32px, 5vw, 48px)',
@@ -86,7 +84,6 @@ const MenuPage = () => {
                     </p>
                 </div>
 
-                {/* Category Filters */}
                 <div style={{
                     display: 'flex',
                     gap: '12px',
@@ -129,7 +126,6 @@ const MenuPage = () => {
                     ))}
                 </div>
 
-                {/* Products Grid */}
                 {filteredProducts.length === 0 ? (
                     <div style={{
                         textAlign: 'center',
@@ -168,18 +164,53 @@ const MenuPage = () => {
                                     e.currentTarget.style.boxShadow = 'none';
                                 }}
                             >
-                                {/* Product Image Placeholder */}
+                                {/* Product Image with local URL */}
                                 <div style={{
                                     height: '200px',
-                                    background: `linear-gradient(135deg, ${product.isVeg ? '#10b981' : '#ef4444'}20, #2a2a5e)`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    position: 'relative'
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    backgroundColor: '#2a2a5e'
                                 }}>
-                                    <div style={{ fontSize: '80px' }}>
-                                        {product.isVeg ? '🌱' : '🍖'}
-                                    </div>
+                                    {product.image_url ? (
+                                        <img 
+                                            src={product.image_url}
+                                            alt={product.name}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover'
+                                            }}
+                                            onError={(e) => {
+                                                // If image fails to load, show emoji fallback
+                                                e.target.style.display = 'none';
+                                                const parent = e.target.parentElement;
+                                                if (parent) {
+                                                    const fallbackDiv = document.createElement('div');
+                                                    fallbackDiv.style.height = '100%';
+                                                    fallbackDiv.style.display = 'flex';
+                                                    fallbackDiv.style.alignItems = 'center';
+                                                    fallbackDiv.style.justifyContent = 'center';
+                                                    fallbackDiv.style.background = `linear-gradient(135deg, ${product.isVeg ? '#10b981' : '#ef4444'}20, #2a2a5e)`;
+                                                    fallbackDiv.style.fontSize = '80px';
+                                                    fallbackDiv.innerHTML = product.isVeg ? '🌱' : '🍖';
+                                                    parent.appendChild(fallbackDiv);
+                                                }
+                                            }}
+                                        />
+                                    ) : (
+                                        <div style={{
+                                            height: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            background: `linear-gradient(135deg, ${product.isVeg ? '#10b981' : '#ef4444'}20, #2a2a5e)`
+                                        }}>
+                                            <div style={{ fontSize: '80px' }}>
+                                                {product.isVeg ? '🌱' : '🍖'}
+                                            </div>
+                                        </div>
+                                    )}
+                                    
                                     {/* Veg/Non-Veg Badge */}
                                     <div style={{
                                         position: 'absolute',
@@ -190,7 +221,8 @@ const MenuPage = () => {
                                         borderRadius: '20px',
                                         fontSize: '11px',
                                         fontWeight: '600',
-                                        color: 'white'
+                                        color: 'white',
+                                        zIndex: 1
                                     }}>
                                         {product.isVeg ? 'VEG' : 'NON-VEG'}
                                     </div>
@@ -264,8 +296,8 @@ const MenuPage = () => {
                                                 alignItems: 'center',
                                                 gap: '6px'
                                             }}
-                                            onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-                                            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                                         >
                                             🛒 Add to Cart
                                         </button>

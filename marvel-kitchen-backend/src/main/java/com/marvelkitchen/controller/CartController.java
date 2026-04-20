@@ -5,8 +5,7 @@ import com.marvelkitchen.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -16,13 +15,42 @@ public class CartController {
     @Autowired
     private CartService cartService;
     
-    // Get user's cart
+    // Get user's cart - UPDATED with image_url
     @GetMapping
-    public ResponseEntity<List<CartItem>> getCart(@RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(cartService.getUserCart(token));
+    public ResponseEntity<List<Map<String, Object>>> getCart(@RequestHeader("Authorization") String token) {
+        List<CartItem> cartItems = cartService.getUserCart(token);
+        
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (CartItem item : cartItems) {
+            Map<String, Object> itemMap = new HashMap<>();
+            itemMap.put("id", item.getId());
+            itemMap.put("quantity", item.getQuantity());
+            
+            Map<String, Object> productMap = new HashMap<>();
+            productMap.put("id", item.getProduct().getId());
+            productMap.put("name", item.getProduct().getName());
+            productMap.put("description", item.getProduct().getDescription());
+            productMap.put("price", item.getProduct().getPrice());
+            productMap.put("isVeg", item.getProduct().getIsVeg());
+            productMap.put("isAvailable", item.getProduct().getIsAvailable());
+            productMap.put("rating", item.getProduct().getRating());
+            productMap.put("image_url", item.getProduct().getImageUrl());  // ✅ IMPORTANT!
+            
+            if (item.getProduct().getCategory() != null) {
+                Map<String, Object> catMap = new HashMap<>();
+                catMap.put("id", item.getProduct().getCategory().getId());
+                catMap.put("name", item.getProduct().getCategory().getName());
+                productMap.put("category", catMap);
+            }
+            
+            itemMap.put("product", productMap);
+            response.add(itemMap);
+        }
+        
+        return ResponseEntity.ok(response);
     }
     
-    // Add item to cart - FIXED
+    // Add item to cart
     @PostMapping("/add")
     public ResponseEntity<?> addToCart(@RequestHeader("Authorization") String token,
                                        @RequestBody Map<String, Object> request) {
@@ -30,9 +58,23 @@ public class CartController {
             Long productId = Long.valueOf(request.get("productId").toString());
             Integer quantity = (Integer) request.getOrDefault("quantity", 1);
             
-            // 👈 FIXED: token pass kar raha hu (String), productId, quantity
             CartItem cartItem = cartService.addToCart(token, productId, quantity);
-            return ResponseEntity.ok(cartItem);
+            
+            // Return with product details including image_url
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", cartItem.getId());
+            response.put("quantity", cartItem.getQuantity());
+            
+            Map<String, Object> productMap = new HashMap<>();
+            productMap.put("id", cartItem.getProduct().getId());
+            productMap.put("name", cartItem.getProduct().getName());
+            productMap.put("price", cartItem.getProduct().getPrice());
+            productMap.put("isVeg", cartItem.getProduct().getIsVeg());
+            productMap.put("image_url", cartItem.getProduct().getImageUrl());
+            
+            response.put("product", productMap);
+            
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -50,12 +92,11 @@ public class CartController {
         }
     }
     
-    // Remove item from cart - FIXED
+    // Remove item from cart
     @DeleteMapping("/remove/{productId}")
     public ResponseEntity<?> removeFromCart(@RequestHeader("Authorization") String token,
                                             @PathVariable Long productId) {
         try {
-            // 👈 FIXED: token pass kar raha hu
             cartService.removeFromCart(token, productId);
             return ResponseEntity.ok("Item removed from cart");
         } catch (Exception e) {
@@ -63,11 +104,10 @@ public class CartController {
         }
     }
     
-    // Clear cart - FIXED
+    // Clear cart
     @DeleteMapping("/clear")
     public ResponseEntity<?> clearCart(@RequestHeader("Authorization") String token) {
         try {
-            // 👈 FIXED: token pass kar raha hu
             cartService.clearCart(token);
             return ResponseEntity.ok("Cart cleared successfully");
         } catch (Exception e) {

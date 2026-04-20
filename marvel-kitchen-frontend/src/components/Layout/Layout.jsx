@@ -1,7 +1,8 @@
 // src/components/Layout/Layout.jsx
 import React from 'react';
-import Navbar from './Navbar';
+
 import Footer from './Footer'; 
+import Navbar from './Navbar';
 
 const Layout = ({ children }) => {
     const userRole = localStorage.getItem('role');
