@@ -49,8 +49,14 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/auth/**", "/api/products/**", "/api/categories/**").permitAll()
                 
-                // ✅ Payment endpoints - Allow all (no auth required)
+                // Payment endpoints
                 .requestMatchers("/api/payments/**").permitAll()
+                
+                // ✅ STATIC RESOURCES - Uploaded images (Add this line)
+                .requestMatchers("/uploads/**").permitAll()
+                
+                // Image Upload endpoint (Admin only)
+                .requestMatchers("/api/upload/**").hasRole("ADMIN")
                 
                 // Admin endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

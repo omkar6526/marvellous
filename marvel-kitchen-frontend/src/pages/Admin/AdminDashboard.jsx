@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import {
   addProduct,
-  deleteProduct,
   getAdminStats,
   getAllOrders,
   getAllProducts,
@@ -77,21 +76,28 @@ const AdminDashboard = () => {
     }
   };
 
-  // ✅ Image Upload Function
+  // ✅ Image Upload Function - NO SIZE LIMIT
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file) {
+      toast.error("Please select an image");
+      return;
+    }
 
-    // Validate file type
+    // Validate file type only
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
       return;
     }
 
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image size should be less than 2MB");
-      return;
+    // Show warning for large images but don't block
+    if (file.size > 5 * 1024 * 1024) {
+      toast((t) => (
+        <span>
+          ⚠️ Large image ({Math.round(file.size / 1024 / 1024)}MB). 
+          Upload may take a moment.
+        </span>
+      ), { duration: 3000 });
     }
 
     setUploading(true);
@@ -105,15 +111,18 @@ const AdminDashboard = () => {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
+        timeout: 120000, // 2 minutes timeout for large files
       });
 
       if (response.data.success) {
         setNewProduct({ ...newProduct, imageUrl: response.data.imageUrl });
         toast.success("Image uploaded successfully!");
+      } else {
+        toast.error(response.data.message || "Upload failed");
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Failed to upload image");
+      toast.error(error.response?.data?.error || "Failed to upload image");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -139,22 +148,6 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       toast.error("Failed to change product status");
-    }
-  };
-
-  const deleteProductHandler = async (productId) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      try {
-        const response = await deleteProduct(productId);
-        if (response.data.action === "disabled") {
-          toast.success(response.data.message);
-        } else {
-          toast.success("Product deleted successfully");
-        }
-        loadDashboardData();
-      } catch (error) {
-        toast.error("Failed to delete product");
-      }
     }
   };
 
@@ -190,10 +183,11 @@ const AdminDashboard = () => {
 
   // Helper function to get image URL with fallback
   const getImageUrl = (imageUrl, productName, isVeg) => {
-    if (imageUrl && imageUrl.startsWith("/uploads/")) {
+    if (!imageUrl) return null;
+    if (imageUrl.startsWith("/uploads/")) {
       return `http://localhost:8080${imageUrl}`;
     }
-    if (imageUrl && (imageUrl.startsWith("http") || imageUrl.startsWith("/images"))) {
+    if (imageUrl.startsWith("http") || imageUrl.startsWith("/images")) {
       return imageUrl;
     }
     return null;
@@ -271,7 +265,7 @@ const AdminDashboard = () => {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0f0f23" }}>
-      {/* Admin Header - Same as before */}
+      {/* Admin Header */}
       <div
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -325,7 +319,7 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "30px" }}>
-        {/* Payment Stats Cards - Same as before */}
+        {/* Payment Stats Cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px", marginBottom: "30px" }}>
           <div style={{ background: "#1a1a3e", borderRadius: "20px", padding: "20px", border: "1px solid rgba(16, 185, 129, 0.2)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -371,7 +365,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Tabs - Same as before */}
+        {/* Tabs */}
         <div style={{ display: "flex", gap: "12px", marginBottom: "30px", flexWrap: "wrap", background: "#1a1a3e", borderRadius: "16px", padding: "8px" }}>
           {[
             { id: "dashboard", label: "📊 Dashboard" },
@@ -399,10 +393,9 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* DASHBOARD TAB - Same as before (skipping for brevity) */}
+        {/* DASHBOARD TAB */}
         {activeTab === "dashboard" && (
           <div>
-            {/* Dashboard content - same as your existing code */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "40px" }}>
               <div style={{ background: "#1a1a3e", borderRadius: "20px", padding: "24px", border: "1px solid rgba(102, 126, 234, 0.2)" }}>
                 <div style={{ fontSize: "48px" }}>📦</div>
@@ -438,7 +431,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ORDERS TAB - Same as before (skipping for brevity) */}
+        {/* ORDERS TAB */}
         {activeTab === "orders" && (
           <div style={{ background: "#1a1a3e", borderRadius: "20px", padding: "24px", border: "1px solid rgba(102, 126, 234, 0.2)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "15px" }}>
@@ -500,7 +493,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ========== PRODUCTS TAB - UPDATED WITH IMAGE UPLOAD & DISPLAY ========== */}
+        {/* ========== PRODUCTS TAB - NO DELETE BUTTON ========== */}
         {activeTab === "products" && (
           <div style={{ background: "#1a1a3e", borderRadius: "20px", padding: "24px", border: "1px solid rgba(102, 126, 234, 0.2)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "15px" }}>
@@ -521,7 +514,7 @@ const AdminDashboard = () => {
                   <input type="text" placeholder="Product Name" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} style={{ padding: "12px 16px", borderRadius: "10px", background: "#1a1a3e", border: "1px solid #3a3a6e", color: "white", outline: "none" }} />
                   <input type="number" placeholder="Price" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} style={{ padding: "12px 16px", borderRadius: "10px", background: "#1a1a3e", border: "1px solid #3a3a6e", color: "white", outline: "none" }} />
                   
-                  {/* ✅ Image Upload with File Picker */}
+                  {/* Image Upload with File Picker - NO SIZE LIMIT */}
                   <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                     <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" style={{ display: "none" }} />
                     <button onClick={() => fileInputRef.current?.click()} disabled={uploading} style={{ background: "#667eea", color: "white", border: "none", padding: "12px 16px", borderRadius: "10px", cursor: "pointer", fontSize: "14px" }}>
@@ -545,62 +538,88 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Products Table with Images */}
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.1)" }}>
-                    <th style={{ padding: "12px", textAlign: "left", color: "#a0a0c0" }}>ID</th>
-                    <th style={{ padding: "12px", textAlign: "left", color: "#a0a0c0" }}>Product</th>
-                    <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Price</th>
-                    <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Status</th>
-                    <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((product) => {
-                    const imageUrl = getImageUrl(product.imageUrl, product.name, product.isVeg);
-                    return (
-                      <tr key={product.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                        <td style={{ padding: "12px", color: "#fff", fontWeight: "500" }}>{product.id}</td>
-                        <td style={{ padding: "12px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                            {/* ✅ Product Image Display */}
-                            <div style={{ width: "48px", height: "48px", borderRadius: "10px", overflow: "hidden", background: "#2a2a5e" }}>
-                              {imageUrl ? (
-                                <img src={imageUrl} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; e.target.parentElement.innerHTML = product.isVeg ? "🌱" : "🍖"; e.target.parentElement.style.display = "flex"; e.target.parentElement.style.alignItems = "center"; e.target.parentElement.style.justifyContent = "center"; e.target.parentElement.style.fontSize = "24px"; }} />
-                              ) : (
-                                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>{product.isVeg ? "🌱" : "🍖"}</div>
-                              )}
-                            </div>
-                            <div>
-                              <div style={{ color: "white", fontWeight: "600", marginBottom: "4px" }}>{product.name}</div>
-                              <div style={{ color: "#a0a0c0", fontSize: "12px", maxWidth: "300px" }}>{product.description?.length > 60 ? product.description.substring(0, 60) + "..." : product.description || "No description"}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ padding: "12px", textAlign: "center" }}><span style={{ color: "#10b981", fontWeight: "bold", fontSize: "16px" }}>₹{product.price}</span></td>
-                        <td style={{ padding: "12px", textAlign: "center" }}>
-                          <button onClick={() => toggleProductStatus(product.id)} style={{ padding: "4px 12px", borderRadius: "20px", border: "none", cursor: "pointer", background: product.isAvailable ? "#10b981" : "#f59e0b", color: "white", fontSize: "11px", fontWeight: "500" }}>
-                            {product.isAvailable ? "✅ Active" : "⭕ Disabled"}
-                          </button>
-                        </td>
-                        <td style={{ padding: "12px", textAlign: "center" }}>
-                          <button onClick={() => deleteProductHandler(product.id)} style={{ background: "#ef4444", color: "white", border: "none", padding: "6px 16px", borderRadius: "8px", cursor: "pointer", fontSize: "12px" }}>
-                            {product.isAvailable ? "🗑️ Delete" : "👻 Hide"}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              {products.length === 0 && <div style={{ textAlign: "center", padding: "60px", color: "#a0a0c0" }}><div style={{ fontSize: "64px", marginBottom: "16px" }}>🍕</div><p>No products found. Click "Add New Product" to create one.</p></div>}
-            </div>
+{/* Products Table - NO DELETE BUTTON */}
+<div style={{ overflowX: "auto" }}>
+  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <thead>
+      <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.1)" }}>
+        <th style={{ padding: "12px", textAlign: "left", color: "#a0a0c0" }}>ID</th>
+        <th style={{ padding: "12px", textAlign: "left", color: "#a0a0c0" }}>Product</th>
+        <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Price</th>
+        <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {products.map((product) => {
+        const imageUrl = getImageUrl(product.imageUrl, product.name, product.isVeg);
+        return (
+          <tr key={product.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+            <td style={{ padding: "12px", color: "#fff", fontWeight: "500" }}>{product.id}</td>
+            <td style={{ padding: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "10px", overflow: "hidden", background: "#2a2a5e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {imageUrl ? (
+                    <img 
+                      src={imageUrl} 
+                      alt={product.name} 
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        const parent = e.target.parentElement;
+                        if (parent) {
+                          parent.style.display = "flex";
+                          parent.style.alignItems = "center";
+                          parent.style.justifyContent = "center";
+                          parent.style.background = `linear-gradient(135deg, ${product.isVeg ? "#10b981" : "#ef4444"}20, #2a2a5e)`;
+                          parent.style.fontSize = "24px";
+                          parent.innerHTML = product.isVeg ? "🌱" : "🍖";
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>
+                      {product.isVeg ? "🌱" : "🍖"}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div style={{ color: "white", fontWeight: "600", marginBottom: "4px" }}>{product.name}</div>
+                  <div style={{ color: "#a0a0c0", fontSize: "12px", maxWidth: "300px" }}>{product.description?.length > 60 ? product.description.substring(0, 60) + "..." : product.description || "No description"}</div>
+                </div>
+              </div>
+            </td>
+            <td style={{ padding: "12px", textAlign: "center" }}><span style={{ color: "#10b981", fontWeight: "bold", fontSize: "16px" }}>₹{product.price}</span></td>
+            <td style={{ padding: "12px", textAlign: "center" }}>
+              <button
+                onClick={() => toggleProductStatus(product.id)}
+                style={{
+                  padding: "6px 16px",
+                  borderRadius: "20px",
+                  border: "none",
+                  cursor: "pointer",
+                  background: product.isAvailable ? "#10b981" : "#f59e0b",
+                  color: "white",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => e.target.style.opacity = "0.8"}
+                onMouseLeave={(e) => e.target.style.opacity = "1"}
+              >
+                {product.isAvailable ? "✅ Active" : "⭕ Disabled"}
+              </button>
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+  {products.length === 0 && <div style={{ textAlign: "center", padding: "60px", color: "#a0a0c0" }}><div style={{ fontSize: "64px", marginBottom: "16px" }}>🍕</div><p>No products found. Click "Add New Product" to create one.</p></div>}
+</div>
           </div>
         )}
 
-        {/* USERS TAB - Same as before */}
+        {/* USERS TAB */}
         {activeTab === "users" && (
           <div style={{ background: "#1a1a3e", borderRadius: "20px", padding: "24px", border: "1px solid rgba(102, 126, 234, 0.2)" }}>
             <h3 style={{ color: "white", fontSize: "18px", marginBottom: "24px" }}>User Management</h3>
@@ -613,7 +632,7 @@ const AdminDashboard = () => {
                     <th style={{ padding: "12px", textAlign: "left", color: "#a0a0c0" }}>Email</th>
                     <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Role</th>
                     <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Phone</th>
-                   </tr>
+                  </tr>
                 </thead>
                 <tbody>
                   {users.map((user) => (

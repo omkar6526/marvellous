@@ -1,10 +1,8 @@
 package com.marvelkitchen.controller;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,29 +16,26 @@ import java.util.UUID;
 @CrossOrigin(origins = "http://localhost:3000")
 public class FileUploadController {
     
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-    
     @PostMapping("/image")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
-            // Create directory if not exists
-            Path uploadPath = Paths.get(uploadDir + "/products/");
+            // Directly save to React's public folder
+            String reactImagesPath = "../marvel-kitchen-frontend/public/images/products/";
+            Path uploadPath = Paths.get(reactImagesPath);
+            
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
             
-            // Generate unique filename
             String originalFilename = file.getOriginalFilename();
             String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String newFilename = UUID.randomUUID().toString() + extension;
             
-            // Save file
             Path filePath = uploadPath.resolve(newFilename);
             Files.copy(file.getInputStream(), filePath);
             
-            // Return image URL
-            String imageUrl = "/uploads/products/" + newFilename;
+            // Return URL that React can access
+            String imageUrl = "/images/products/" + newFilename;
             
             Map<String, String> response = new HashMap<>();
             response.put("success", "true");

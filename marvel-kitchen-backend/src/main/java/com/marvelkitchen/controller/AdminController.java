@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -31,9 +29,8 @@ public class AdminController {
     private UserService userService;
     
     @Autowired
-    private OrderItemRepository orderItemRepository;  // ✅ Add this
+    private OrderItemRepository orderItemRepository;
     
-    // 1. Dashboard Statistics
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
@@ -47,13 +44,11 @@ public class AdminController {
         return ResponseEntity.ok(stats);
     }
     
-    // 2. Get All Orders
     @GetMapping("/orders")
     public ResponseEntity<List<Order>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
     
-    // 3. Update Order Status
     @PutMapping("/orders/{orderId}/status")
     public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, 
                                                 @RequestParam String status) {
@@ -65,18 +60,40 @@ public class AdminController {
         }
     }
     
-    // 4. Get All Products (Only Active products for frontend)
+    // ✅ FIXED: Return Map with imageUrl field
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts() {
+    public ResponseEntity<List<Map<String, Object>>> getAllProducts() {
         List<Product> products = productService.getAllProducts();
-        return ResponseEntity.ok(products);
+        List<Map<String, Object>> response = new ArrayList<>();
+        
+        for (Product p : products) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", p.getId());
+            map.put("name", p.getName());
+            map.put("description", p.getDescription());
+            map.put("price", p.getPrice());
+            map.put("isVeg", p.getIsVeg());
+            map.put("isAvailable", p.getIsAvailable());
+            map.put("rating", p.getRating());
+            map.put("imageUrl", p.getImageUrl());  // ✅ Frontend expects imageUrl
+            map.put("image_url", p.getImageUrl()); // ✅ Also add underscore version
+            
+            // Add category info
+            if (p.getCategory() != null) {
+                Map<String, Object> catMap = new HashMap<>();
+                catMap.put("id", p.getCategory().getId());
+                catMap.put("name", p.getCategory().getName());
+                map.put("category", catMap);
+            }
+            response.add(map);
+        }
+        return ResponseEntity.ok(response);
     }
     
-    // 5. Add New Product
     @PostMapping("/products")
     public ResponseEntity<?> addProduct(@RequestBody Product product) {
         try {
-            product.setIsAvailable(true);  // New products are active by default
+            product.setIsAvailable(true);
             Product savedProduct = productService.addProduct(product);
             return ResponseEntity.ok(savedProduct);
         } catch (Exception e) {
@@ -84,7 +101,6 @@ public class AdminController {
         }
     }
     
-    // 6. Update Product
     @PutMapping("/products/{productId}")
     public ResponseEntity<?> updateProduct(@PathVariable Long productId, 
                                            @RequestBody Product product) {
@@ -96,17 +112,14 @@ public class AdminController {
         }
     }
     
-    // 7. Delete Product - Smart Delete (Soft delete if has orders)
     @DeleteMapping("/products/{productId}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long productId) {
         try {
-            // Check if product exists in any order
             boolean hasOrders = orderItemRepository.existsByProductId(productId);
             
             if (hasOrders) {
-                // Product has orders - Just disable it (Soft Delete)
                 Product product = productService.getProductById(productId);
-                product.setIsAvailable(false);  // Hide from menu
+                product.setIsAvailable(false);
                 productService.updateProduct(productId, product);
                 
                 Map<String, Object> response = new HashMap<>();
@@ -116,7 +129,6 @@ public class AdminController {
                 response.put("productId", productId);
                 return ResponseEntity.ok(response);
             } else {
-                // No orders - Safe to delete permanently
                 productService.deleteProduct(productId);
                 
                 Map<String, Object> response = new HashMap<>();
@@ -134,16 +146,13 @@ public class AdminController {
         }
     }
     
-    // 8. Get All Users
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
-        // Remove passwords before sending
         users.forEach(user -> user.setPassword(null));
         return ResponseEntity.ok(users);
     }
     
-    // 9. Get User Order History
     @GetMapping("/users/{userId}/orders")
     public ResponseEntity<?> getUserOrders(@PathVariable Long userId) {
         try {
@@ -154,7 +163,6 @@ public class AdminController {
         }
     }
     
-    // 10. Toggle Product Availability (Enable/Disable)
     @PutMapping("/products/{productId}/toggle")
     public ResponseEntity<?> toggleProductAvailability(@PathVariable Long productId) {
         try {
