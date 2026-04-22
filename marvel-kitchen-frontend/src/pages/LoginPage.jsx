@@ -11,17 +11,34 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    // Check if already logged in
+    // Check if already logged in and token is valid
     useEffect(() => {
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role');
         
         if (token) {
-            if (role === 'ADMIN') {
-                window.location.href = '/admin/dashboard';
-            } else {
-                window.location.href = '/';  // ✅ Full refresh for user also
-            }
+            // ✅ Verify if token is still valid by making a test API call
+            fetch('http://localhost:8080/api/products', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => {
+                if (res.status === 403 || res.status === 401) {
+                    // Token expired, clear it
+                    localStorage.clear();
+                    console.log('Token expired. Please login again.');
+                } else {
+                    // Token valid, redirect
+                    if (role === 'ADMIN') {
+                        window.location.href = '/admin/dashboard';
+                    } else {
+                        window.location.href = '/';
+                    }
+                }
+            })
+            .catch(() => {
+                // On error, don't redirect
+                console.log('Error checking token');
+            });
         }
     }, []);
 
@@ -51,7 +68,15 @@ const LoginPage = () => {
             
         } catch (error) {
             console.error('Login error:', error);
-            toast.error(error.response?.data || 'Invalid email or password');
+            
+            // ✅ Handle different error cases
+            if (error.response?.status === 403 || error.response?.status === 401) {
+                toast.error('Invalid email or password');
+            } else if (error.response?.data) {
+                toast.error(error.response.data);
+            } else {
+                toast.error('Login failed. Please try again.');
+            }
         } finally {
             setLoading(false);
         }

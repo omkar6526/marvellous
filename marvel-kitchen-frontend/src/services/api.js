@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -19,6 +20,36 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// ✅ Add response interceptor to handle token expiry
+api.interceptors.response.use(
+    (response) => {
+        // If response is successful, just return it
+        return response;
+    },
+    (error) => {
+        // Check if error is 403 (Forbidden) or 401 (Unauthorized)
+        if (error.response?.status === 403 || error.response?.status === 401) {
+            const token = localStorage.getItem('token');
+            
+            // If token exists but got 403/401, token is expired or invalid
+            if (token) {
+                console.log('Token expired or invalid. Clearing localStorage...');
+                localStorage.clear();
+                
+                // Only redirect if not already on login page
+                if (window.location.pathname !== '/login' && 
+                    window.location.pathname !== '/register') {
+                    toast.error('Session expired. Please login again.');
+                    window.location.href = '/login';
+                }
+            }
+        }
+        
+        // Return error so individual calls can also handle it
+        return Promise.reject(error);
+    }
+);
+
 // Auth
 export const login = (email, password) => api.post('/auth/login', { email, password });
 export const register = (userData) => api.post('/auth/register', userData);
@@ -38,8 +69,6 @@ export const getMyOrders = () => api.get('/orders/myorders');
 // User Profile - ADD THESE FUNCTIONS
 export const getUserProfile = () => api.get('/user/profile');
 export const updateUserProfile = (userData) => api.put('/user/profile', userData);
-
-
 
 //-------------------------------------Admin APIs-------------------------------------//
 // Admin APIs

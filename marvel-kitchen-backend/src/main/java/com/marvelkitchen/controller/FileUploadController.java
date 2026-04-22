@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/upload")
@@ -27,15 +26,31 @@ public class FileUploadController {
                 Files.createDirectories(uploadPath);
             }
             
+            // ✅ Use original file name (remove spaces for web safety)
             String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String newFilename = UUID.randomUUID().toString() + extension;
             
-            Path filePath = uploadPath.resolve(newFilename);
+            // Remove spaces and special characters from file name
+            String cleanFileName = originalFilename
+                .replaceAll("[^a-zA-Z0-9.-]", "-")  // Replace special chars with hyphen
+                .replaceAll("-+", "-");              // Replace multiple hyphens with single hyphen
+            
+            Path filePath = uploadPath.resolve(cleanFileName);
+            
+            // If file already exists, add number suffix
+            int counter = 1;
+            while (Files.exists(filePath)) {
+                String nameWithoutExt = cleanFileName.substring(0, cleanFileName.lastIndexOf("."));
+                String extension = cleanFileName.substring(cleanFileName.lastIndexOf("."));
+                String newName = nameWithoutExt + "-" + counter + extension;
+                filePath = uploadPath.resolve(newName);
+                cleanFileName = newName;
+                counter++;
+            }
+            
             Files.copy(file.getInputStream(), filePath);
             
             // Return URL that React can access
-            String imageUrl = "/images/products/" + newFilename;
+            String imageUrl = "/images/products/" + cleanFileName;
             
             Map<String, String> response = new HashMap<>();
             response.put("success", "true");

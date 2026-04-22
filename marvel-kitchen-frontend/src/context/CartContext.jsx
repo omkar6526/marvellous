@@ -24,8 +24,19 @@ export const CartProvider = ({ children }) => {
             setTotalAmount(total);
         } catch (error) {
             console.error('Error loading cart:', error);
-            setCartItems([]);
-            setTotalAmount(0);
+            
+            // ✅ Check if error is 403 (Forbidden) - Token expired
+            if (error.response?.status === 403 || error.response?.status === 401) {
+                console.log('Token expired or invalid. Clearing localStorage...');
+                localStorage.clear();
+                setCartItems([]);
+                setTotalAmount(0);
+                // Optional: Redirect to login
+                // window.location.href = '/login';
+            } else {
+                setCartItems([]);
+                setTotalAmount(0);
+            }
         }
     };
 
@@ -40,7 +51,14 @@ export const CartProvider = ({ children }) => {
             await loadCart();
             toast.success('Added to cart!');
         } catch (error) {
-            toast.error('Failed to add');
+            // ✅ Handle token expiry on add
+            if (error.response?.status === 403 || error.response?.status === 401) {
+                localStorage.clear();
+                toast.error('Session expired. Please login again.');
+                window.location.href = '/login';
+            } else {
+                toast.error('Failed to add');
+            }
         }
     };
 
@@ -50,7 +68,14 @@ export const CartProvider = ({ children }) => {
             await loadCart();
             toast.success('Removed from cart');
         } catch (error) {
-            toast.error('Failed to remove');
+            // ✅ Handle token expiry on remove
+            if (error.response?.status === 403 || error.response?.status === 401) {
+                localStorage.clear();
+                toast.error('Session expired. Please login again.');
+                window.location.href = '/login';
+            } else {
+                toast.error('Failed to remove');
+            }
         }
     };
 
@@ -63,11 +88,9 @@ export const CartProvider = ({ children }) => {
         const handleStorageChange = (e) => {
             if (e.key === 'token') {
                 if (!e.newValue) {
-                    // Token removed - logout
                     setCartItems([]);
                     setTotalAmount(0);
                 } else {
-                    // Token added - login
                     loadCart();
                 }
             }
