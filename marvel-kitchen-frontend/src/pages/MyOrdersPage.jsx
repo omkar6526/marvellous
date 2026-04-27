@@ -75,10 +75,8 @@ const MyOrdersPage = () => {
         }
     };
 
-    // Helper function to get image URL with fallback
     const getImageUrl = (productName, imageUrl) => {
         if (imageUrl) return imageUrl;
-        // Fallback: generate path from product name
         const nameSlug = productName.toLowerCase().replace(/ /g, '-');
         return `/images/products/${nameSlug}.png`;
     };
@@ -279,21 +277,58 @@ const MyOrdersPage = () => {
                                         </div>
                                     </div>
                                     
-                                    <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '10px',
-                                        background: `${getStatusColor(order.status)}20`,
-                                        padding: '8px 15px',
-                                        borderRadius: '20px'
-                                    }}>
-                                        {getStatusIcon(order.status)}
-                                        <span style={{
-                                            color: getStatusColor(order.status),
-                                            fontWeight: 'bold'
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                                        {/* Status Badge */}
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            background: `${getStatusColor(order.status)}20`,
+                                            padding: '8px 15px',
+                                            borderRadius: '20px'
                                         }}>
-                                            {getStatusText(order.status)}
-                                        </span>
+                                            {getStatusIcon(order.status)}
+                                            <span style={{
+                                                color: getStatusColor(order.status),
+                                                fontWeight: 'bold'
+                                            }}>
+                                                {getStatusText(order.status)}
+                                            </span>
+                                        </div>
+                                        
+                                        {/* ✅ TRACK ORDER BUTTON - Only for active orders */}
+                                        {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/track-order/${order.id}`);
+                                                }}
+                                                style={{
+                                                    background: '#667eea',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '8px 16px',
+                                                    borderRadius: '20px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px',
+                                                    fontWeight: '500',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.target.style.transform = 'scale(1.05)';
+                                                    e.target.style.background = '#5a6fd6';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.target.style.transform = 'scale(1)';
+                                                    e.target.style.background = '#667eea';
+                                                }}
+                                            >
+                                                📍 Track Order
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -337,7 +372,6 @@ const MyOrdersPage = () => {
                                             padding: '5px 12px',
                                             borderRadius: '15px'
                                         }}>
-                                            {/* Product Image Thumbnail */}
                                             <div style={{
                                                 width: '30px',
                                                 height: '30px',
@@ -412,7 +446,6 @@ const MyOrdersPage = () => {
                                     padding: '20px',
                                     background: '#2a2a5e'
                                 }}>
-                                    {/* All Items with Images */}
                                     <h4 style={{ marginBottom: '15px', color: 'white' }}>Order Items</h4>
                                     <div style={{ marginBottom: '20px' }}>
                                         {order.items?.map((item, idx) => (
@@ -424,7 +457,6 @@ const MyOrdersPage = () => {
                                                 borderBottom: '1px solid rgba(255,255,255,0.1)'
                                             }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                    {/* Product Image */}
                                                     <div style={{
                                                         width: '50px',
                                                         height: '50px',
@@ -467,7 +499,6 @@ const MyOrdersPage = () => {
                                         ))}
                                     </div>
 
-                                    {/* Price Breakdown */}
                                     <div style={{
                                         background: '#1a1a3e',
                                         borderRadius: '10px',
@@ -503,7 +534,6 @@ const MyOrdersPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Delivery Info */}
                                     <div style={{
                                         background: '#1a1a3e',
                                         borderRadius: '10px',
@@ -532,7 +562,6 @@ const MyOrdersPage = () => {
                 </div>
             </div>
 
-            {/* Animation Keyframes */}
             <style>{`
                 @keyframes spin {
                     0% { transform: rotate(0deg); }

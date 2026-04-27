@@ -29,6 +29,7 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
+  const [deliveryBoys, setDeliveryBoys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -58,16 +59,21 @@ const AdminDashboard = () => {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const [statsRes, ordersRes, productsRes, usersRes] = await Promise.all([
+      const token = localStorage.getItem("token");
+      const [statsRes, ordersRes, productsRes, usersRes, deliveryBoysRes] = await Promise.all([
         getAdminStats(),
         getAllOrders(),
         getAllProducts(),
         getAllUsers(),
+        axios.get("http://localhost:8080/api/admin/delivery-boys", {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => ({ data: [] }))
       ]);
       setStats(statsRes.data);
       setOrders(ordersRes.data);
       setProducts(productsRes.data);
       setUsers(usersRes.data);
+      setDeliveryBoys(deliveryBoysRes.data || []);
     } catch (error) {
       console.error("Error loading dashboard:", error);
       toast.error("Failed to load dashboard data");
@@ -76,7 +82,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // ✅ Image Upload Function - NO SIZE LIMIT
+  // Image Upload Function
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) {
@@ -84,13 +90,11 @@ const AdminDashboard = () => {
       return;
     }
 
-    // Validate file type only
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
       return;
     }
 
-    // Show warning for large images but don't block
     if (file.size > 5 * 1024 * 1024) {
       toast((t) => (
         <span>
@@ -111,7 +115,7 @@ const AdminDashboard = () => {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
-        timeout: 120000, // 2 minutes timeout for large files
+        timeout: 120000,
       });
 
       if (response.data.success) {
@@ -136,6 +140,22 @@ const AdminDashboard = () => {
       loadDashboardData();
     } catch (error) {
       toast.error("Failed to update status");
+    }
+  };
+
+  // ✅ Assign Delivery Boy to Order
+  const assignDeliveryBoy = async (orderId, deliveryBoyId) => {
+    if (!deliveryBoyId) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`http://localhost:8080/api/admin/orders/${orderId}/assign-delivery?deliveryBoyId=${deliveryBoyId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(`Delivery boy assigned to order #${orderId}`);
+      loadDashboardData();
+    } catch (error) {
+      console.error("Assignment error:", error);
+      toast.error(error.response?.data?.error || "Failed to assign delivery boy");
     }
   };
 
@@ -181,7 +201,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Helper function to get image URL with fallback
   const getImageUrl = (imageUrl, productName, isVeg) => {
     if (!imageUrl) return null;
     if (imageUrl.startsWith("/uploads/")) {
@@ -431,7 +450,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ORDERS TAB */}
+        {/* ORDERS TAB - WITH DELIVERY BOY ASSIGNMENT */}
         {activeTab === "orders" && (
           <div style={{ background: "#1a1a3e", borderRadius: "20px", padding: "24px", border: "1px solid rgba(102, 126, 234, 0.2)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "15px" }}>
@@ -456,6 +475,7 @@ const AdminDashboard = () => {
                     <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Amount</th>
                     <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Payment</th>
                     <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Status</th>
+                    <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Assign Delivery</th>
                     <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Action</th>
                   </tr>
                 </thead>
@@ -475,8 +495,44 @@ const AdminDashboard = () => {
                           {order.status}
                         </span>
                       </td>
+                      {/* Delivery Boy Assignment Column */}
                       <td style={{ padding: "12px", textAlign: "center" }}>
-                        <select value={order.status} onChange={(e) => updateOrderStatusHandler(order.id, e.target.value)} style={{ padding: "6px 12px", borderRadius: "8px", background: "#2a2a5e", color: "white", border: "1px solid #3a3a6e", cursor: "pointer" }}>
+                        {order.status !== "DELIVERED" && order.status !== "CANCELLED" ? (
+                          <select
+                            value={order.deliveryBoyId || ""}
+                            onChange={(e) => assignDeliveryBoy(order.id, e.target.value)}
+                            style={{
+                              padding: "6px 12px",
+                              borderRadius: "8px",
+                              background: "#2a2a5e",
+                              color: "white",
+                              border: "1px solid #3a3a6e",
+                              cursor: "pointer",
+                              fontSize: "12px",
+                              minWidth: "140px"
+                            }}
+                          >
+                            <option value="">Select Delivery Boy</option>
+                            {deliveryBoys.filter(b => b.isAvailable).map((boy) => (
+                              <option key={boy.id} value={boy.id}>
+                                🛵 {boy.name} - {boy.vehicleType} (⭐{boy.rating})
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span style={{ color: "#a0a0c0", fontSize: "11px" }}>
+                            {order.deliveryBoyId ? "✅ Assigned" : "—"}
+                          </span>
+                        )}
+                      </td>
+                      {/* Status Update Column */}
+                      <td style={{ padding: "12px", textAlign: "center" }}>
+                        <select 
+                          value={order.status} 
+                          onChange={(e) => updateOrderStatusHandler(order.id, e.target.value)} 
+                          style={{ padding: "6px 12px", borderRadius: "8px", background: "#2a2a5e", color: "white", border: "1px solid #3a3a6e", cursor: "pointer" }}
+                          disabled={order.status === "DELIVERED" || order.status === "CANCELLED"}
+                        >
                           <option value="PENDING">Pending</option>
                           <option value="CONFIRMED">Confirmed</option>
                           <option value="PREPARING">Preparing</option>
@@ -493,7 +549,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ========== PRODUCTS TAB - NO DELETE BUTTON ========== */}
+        {/* PRODUCTS TAB */}
         {activeTab === "products" && (
           <div style={{ background: "#1a1a3e", borderRadius: "20px", padding: "24px", border: "1px solid rgba(102, 126, 234, 0.2)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "15px" }}>
@@ -506,7 +562,6 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            {/* Add Product Form with File Upload */}
             {showAddProduct && (
               <div style={{ background: "#2a2a5e", padding: "24px", borderRadius: "16px", marginBottom: "24px" }}>
                 <h4 style={{ color: "white", marginBottom: "16px" }}>Add New Product</h4>
@@ -514,7 +569,6 @@ const AdminDashboard = () => {
                   <input type="text" placeholder="Product Name" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} style={{ padding: "12px 16px", borderRadius: "10px", background: "#1a1a3e", border: "1px solid #3a3a6e", color: "white", outline: "none" }} />
                   <input type="number" placeholder="Price" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} style={{ padding: "12px 16px", borderRadius: "10px", background: "#1a1a3e", border: "1px solid #3a3a6e", color: "white", outline: "none" }} />
                   
-                  {/* Image Upload with File Picker - NO SIZE LIMIT */}
                   <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                     <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" style={{ display: "none" }} />
                     <button onClick={() => fileInputRef.current?.click()} disabled={uploading} style={{ background: "#667eea", color: "white", border: "none", padding: "12px 16px", borderRadius: "10px", cursor: "pointer", fontSize: "14px" }}>
@@ -538,84 +592,83 @@ const AdminDashboard = () => {
               </div>
             )}
 
-{/* Products Table - NO DELETE BUTTON */}
-<div style={{ overflowX: "auto" }}>
-  <table style={{ width: "100%", borderCollapse: "collapse" }}>
-    <thead>
-      <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.1)" }}>
-        <th style={{ padding: "12px", textAlign: "left", color: "#a0a0c0" }}>ID</th>
-        <th style={{ padding: "12px", textAlign: "left", color: "#a0a0c0" }}>Product</th>
-        <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Price</th>
-        <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      {products.map((product) => {
-        const imageUrl = getImageUrl(product.imageUrl, product.name, product.isVeg);
-        return (
-          <tr key={product.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-            <td style={{ padding: "12px", color: "#fff", fontWeight: "500" }}>{product.id}</td>
-            <td style={{ padding: "12px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: "48px", height: "48px", borderRadius: "10px", overflow: "hidden", background: "#2a2a5e", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {imageUrl ? (
-                    <img 
-                      src={imageUrl} 
-                      alt={product.name} 
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        const parent = e.target.parentElement;
-                        if (parent) {
-                          parent.style.display = "flex";
-                          parent.style.alignItems = "center";
-                          parent.style.justifyContent = "center";
-                          parent.style.background = `linear-gradient(135deg, ${product.isVeg ? "#10b981" : "#ef4444"}20, #2a2a5e)`;
-                          parent.style.fontSize = "24px";
-                          parent.innerHTML = product.isVeg ? "🌱" : "🍖";
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>
-                      {product.isVeg ? "🌱" : "🍖"}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <div style={{ color: "white", fontWeight: "600", marginBottom: "4px" }}>{product.name}</div>
-                  <div style={{ color: "#a0a0c0", fontSize: "12px", maxWidth: "300px" }}>{product.description?.length > 60 ? product.description.substring(0, 60) + "..." : product.description || "No description"}</div>
-                </div>
-              </div>
-            </td>
-            <td style={{ padding: "12px", textAlign: "center" }}><span style={{ color: "#10b981", fontWeight: "bold", fontSize: "16px" }}>₹{product.price}</span></td>
-            <td style={{ padding: "12px", textAlign: "center" }}>
-              <button
-                onClick={() => toggleProductStatus(product.id)}
-                style={{
-                  padding: "6px 16px",
-                  borderRadius: "20px",
-                  border: "none",
-                  cursor: "pointer",
-                  background: product.isAvailable ? "#10b981" : "#f59e0b",
-                  color: "white",
-                  fontSize: "12px",
-                  fontWeight: "500",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => e.target.style.opacity = "0.8"}
-                onMouseLeave={(e) => e.target.style.opacity = "1"}
-              >
-                {product.isAvailable ? "✅ Active" : "⭕ Disabled"}
-              </button>
-            </td>
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  {products.length === 0 && <div style={{ textAlign: "center", padding: "60px", color: "#a0a0c0" }}><div style={{ fontSize: "64px", marginBottom: "16px" }}>🍕</div><p>No products found. Click "Add New Product" to create one.</p></div>}
-</div>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.1)" }}>
+                    <th style={{ padding: "12px", textAlign: "left", color: "#a0a0c0" }}>ID</th>
+                    <th style={{ padding: "12px", textAlign: "left", color: "#a0a0c0" }}>Product</th>
+                    <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Price</th>
+                    <th style={{ padding: "12px", textAlign: "center", color: "#a0a0c0" }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((product) => {
+                    const imageUrl = getImageUrl(product.imageUrl, product.name, product.isVeg);
+                    return (
+                      <tr key={product.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                        <td style={{ padding: "12px", color: "#fff", fontWeight: "500" }}>{product.id}</td>
+                        <td style={{ padding: "12px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <div style={{ width: "48px", height: "48px", borderRadius: "10px", overflow: "hidden", background: "#2a2a5e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              {imageUrl ? (
+                                <img 
+                                  src={imageUrl} 
+                                  alt={product.name} 
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                    const parent = e.target.parentElement;
+                                    if (parent) {
+                                      parent.style.display = "flex";
+                                      parent.style.alignItems = "center";
+                                      parent.style.justifyContent = "center";
+                                      parent.style.background = `linear-gradient(135deg, ${product.isVeg ? "#10b981" : "#ef4444"}20, #2a2a5e)`;
+                                      parent.style.fontSize = "24px";
+                                      parent.innerHTML = product.isVeg ? "🌱" : "🍖";
+                                    }
+                                  }}
+                                />
+                              ) : (
+                                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>
+                                  {product.isVeg ? "🌱" : "🍖"}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div style={{ color: "white", fontWeight: "600", marginBottom: "4px" }}>{product.name}</div>
+                              <div style={{ color: "#a0a0c0", fontSize: "12px", maxWidth: "300px" }}>{product.description?.length > 60 ? product.description.substring(0, 60) + "..." : product.description || "No description"}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ padding: "12px", textAlign: "center" }}><span style={{ color: "#10b981", fontWeight: "bold", fontSize: "16px" }}>₹{product.price}</span></td>
+                        <td style={{ padding: "12px", textAlign: "center" }}>
+                          <button
+                            onClick={() => toggleProductStatus(product.id)}
+                            style={{
+                              padding: "6px 16px",
+                              borderRadius: "20px",
+                              border: "none",
+                              cursor: "pointer",
+                              background: product.isAvailable ? "#10b981" : "#f59e0b",
+                              color: "white",
+                              fontSize: "12px",
+                              fontWeight: "500",
+                              transition: "all 0.2s ease",
+                            }}
+                            onMouseEnter={(e) => e.target.style.opacity = "0.8"}
+                            onMouseLeave={(e) => e.target.style.opacity = "1"}
+                          >
+                            {product.isAvailable ? "✅ Active" : "⭕ Disabled"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {products.length === 0 && <div style={{ textAlign: "center", padding: "60px", color: "#a0a0c0" }}><div style={{ fontSize: "64px", marginBottom: "16px" }}>🍕</div><p>No products found. Click "Add New Product" to create one.</p></div>}
+            </div>
           </div>
         )}
 

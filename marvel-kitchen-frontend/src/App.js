@@ -14,6 +14,7 @@ import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
+import OrderTracking from './pages/OrderTracking';
 
 const ScrollToTop = () => {
     const { pathname } = useLocation();
@@ -46,7 +47,8 @@ function App() {
                     <Route path="/checkout" element={isLoggedIn ? <Layout><CheckoutPage /></Layout> : <Navigate to="/login" />} />
                     <Route path="/my-orders" element={isLoggedIn ? <Layout><MyOrdersPage /></Layout> : <Navigate to="/login" />} />
                     <Route path="/profile" element={isLoggedIn ? <Layout><ProfilePage /></Layout> : <Navigate to="/login" />} />
-                    
+                     <Route path="/track-order/:orderId" element={isLoggedIn ? <Layout><OrderTracking /></Layout> : <Navigate to="/login" />} />
+
                     {/* Admin Route - Only for ADMIN role */}
                     <Route 
                         path="/admin/dashboard" 

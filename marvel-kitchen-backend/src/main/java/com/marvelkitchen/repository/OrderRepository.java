@@ -13,31 +13,27 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     
-    // Get orders by user
     List<Order> findByUserOrderByOrderedAtDesc(User user);
     
-    // Get orders by status
     List<Order> findByStatus(Order.OrderStatus status);
     
-    // Get orders between dates
+    List<Order> findByDeliveryBoyId(Long deliveryBoyId);
+    
+    List<Order> findByDeliveryBoyIdAndStatusIn(Long deliveryBoyId, List<String> statuses);
+    
     List<Order> findByOrderedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
     
-    // Get today's orders
     @Query("SELECT o FROM Order o WHERE DATE(o.orderedAt) = CURRENT_DATE")
     List<Order> findTodayOrders();
     
-    // Get order by orderId
     Optional<Order> findByOrderId(String orderId);
     
-    // Count orders by status
     @Query("SELECT COUNT(o) FROM Order o WHERE o.status = :status")
     long countByStatus(@Param("status") Order.OrderStatus status);
     
-    // Get total revenue
     @Query("SELECT SUM(o.grandTotal) FROM Order o WHERE o.status = 'DELIVERED'")
     Double getTotalRevenue();
     
-    // Get today's revenue
     @Query("SELECT SUM(o.grandTotal) FROM Order o WHERE DATE(o.orderedAt) = CURRENT_DATE AND o.status = 'DELIVERED'")
     Double getTodayRevenue();
 }

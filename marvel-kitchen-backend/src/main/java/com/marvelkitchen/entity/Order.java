@@ -47,31 +47,60 @@ public class Order {
     private LocalDateTime orderedAt = LocalDateTime.now();
     private LocalDateTime deliveredAt;
     
+    // Tracking fields
+    @Column(name = "delivery_boy_id")
+    private Long deliveryBoyId;
+    
+    @Column(name = "assigned_at")
+    private LocalDateTime assignedAt;
+    
+    @Column(name = "picked_up_at")
+    private LocalDateTime pickedUpAt;
+    
+    @Column(name = "estimated_delivery_time")
+    private LocalDateTime estimatedDeliveryTime;
+    
+    // ✅ ADD THIS - Transient field for delivery boy (not stored in DB)
+    @Transient
+    private DeliveryBoy deliveryBoy;
+    
     public enum OrderStatus {
         PENDING, CONFIRMED, PREPARING, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
     }
     
-    // ✅ FIX: Add RAZORPAY here
     public enum PaymentMethod {
-        COD, 
-        CARD, 
-        UPI,
-        RAZORPAY   // 👈 ADD THIS LINE
+        COD, CARD, UPI, RAZORPAY
     }
 
-    // Helper method to add item
+    // Helper methods
     public void addItem(OrderItem item) {
         items.add(item);
         item.setOrder(this);
     }
     
-    // Helper method to remove item
     public void removeItem(OrderItem item) {
         items.remove(item);
         item.setOrder(null);
     }
     
-    // Getters and Setters
+    // Getters and Setters for tracking fields
+    public Long getDeliveryBoyId() { return deliveryBoyId; }
+    public void setDeliveryBoyId(Long deliveryBoyId) { this.deliveryBoyId = deliveryBoyId; }
+    
+    public LocalDateTime getAssignedAt() { return assignedAt; }
+    public void setAssignedAt(LocalDateTime assignedAt) { this.assignedAt = assignedAt; }
+    
+    public LocalDateTime getPickedUpAt() { return pickedUpAt; }
+    public void setPickedUpAt(LocalDateTime pickedUpAt) { this.pickedUpAt = pickedUpAt; }
+    
+    public LocalDateTime getEstimatedDeliveryTime() { return estimatedDeliveryTime; }
+    public void setEstimatedDeliveryTime(LocalDateTime estimatedDeliveryTime) { this.estimatedDeliveryTime = estimatedDeliveryTime; }
+    
+    // ✅ Getter and Setter for transient deliveryBoy
+    public DeliveryBoy getDeliveryBoy() { return deliveryBoy; }
+    public void setDeliveryBoy(DeliveryBoy deliveryBoy) { this.deliveryBoy = deliveryBoy; }
+    
+    // Existing getters/setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     

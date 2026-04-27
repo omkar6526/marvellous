@@ -1,12 +1,16 @@
 package com.marvelkitchen.controller;
 
 import com.marvelkitchen.dto.OrderRequest;
+import com.marvelkitchen.entity.DeliveryBoy;
 import com.marvelkitchen.entity.Order;
 import com.marvelkitchen.entity.OrderItem;
+import com.marvelkitchen.entity.OrderStatusHistory;
 import com.marvelkitchen.entity.User;
 import com.marvelkitchen.security.JwtUtil;
+import com.marvelkitchen.service.DeliveryBoyService;
 import com.marvelkitchen.service.OrderService;
 import com.marvelkitchen.service.UserService;
+import com.marvelkitchen.repository.OrderStatusHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,6 +30,12 @@ public class OrderController {
     
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private DeliveryBoyService deliveryBoyService;
+    
+    @Autowired
+    private OrderStatusHistoryRepository orderStatusHistoryRepository;
     
     private Long getUserIdFromToken(String token) {
         String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
@@ -127,7 +137,6 @@ public class OrderController {
                 itemMap.put("productName", item.getProductName());
                 itemMap.put("quantity", item.getQuantity());
                 itemMap.put("price", item.getPrice());
-                // ✅ IMPORTANT: Add image_url from product
                 itemMap.put("imageUrl", item.getProduct().getImageUrl());
                 
                 itemsList.add(itemMap);
@@ -170,7 +179,7 @@ public class OrderController {
                 itemMap.put("productName", item.getProductName());
                 itemMap.put("quantity", item.getQuantity());
                 itemMap.put("price", item.getPrice());
-                itemMap.put("imageUrl", item.getProduct().getImageUrl());  // ✅ Add this
+                itemMap.put("imageUrl", item.getProduct().getImageUrl());
                 
                 itemsList.add(itemMap);
             }
@@ -179,6 +188,48 @@ public class OrderController {
             return ResponseEntity.ok(orderMap);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    // ✅ NEW ENDPOINT - Order tracking with delivery boy details
+    @GetMapping("/{orderId}/track")
+    public ResponseEntity<?> getOrderTrackingInfo(@PathVariable Long orderId,
+                                                   @RequestHeader("Authorization") String token) {
+        try {
+            Long userId = getUserIdFromToken(token);
+            
+            // Fetch order
+            Order order = orderService.getOrderDetails(orderId, userId);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("order", order);
+            response.put("status", order.getStatus().toString());
+            
+            // ✅ Add delivery boy details if assigned
+            if (order.getDeliveryBoyId() != null) {
+                try {
+                    DeliveryBoy boy = deliveryBoyService.getDeliveryBoyById(order.getDeliveryBoyId());
+                    Map<String, Object> boyMap = new HashMap<>();
+                    boyMap.put("id", boy.getId());
+                    boyMap.put("name", boy.getName());
+                    boyMap.put("phone", boy.getPhone());
+                    boyMap.put("rating", boy.getRating());
+                    boyMap.put("vehicleType", boy.getVehicleType());
+                    boyMap.put("totalDeliveries", boy.getTotalDeliveries());
+                    response.put("deliveryBoy", boyMap);
+                } catch (Exception e) {
+                    response.put("deliveryBoy", null);
+                }
+            }
+            
+            // Add status history
+            List<OrderStatusHistory> history = orderStatusHistoryRepository.findByOrderIdOrderByCreatedAtDesc(orderId);
+            response.put("statusHistory", history);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
         }
     }
     

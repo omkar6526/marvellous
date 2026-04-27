@@ -52,8 +52,12 @@ public class SecurityConfig {
                 // Payment endpoints
                 .requestMatchers("/api/payments/**").permitAll()
                 
-                // ✅ STATIC RESOURCES - Uploaded images (Add this line)
+                // Static resources
                 .requestMatchers("/uploads/**").permitAll()
+                
+                // ✅ TEMPORARY - Allow delivery-boys endpoint (Remove after testing)
+                .requestMatchers("/api/admin/delivery-boys").permitAll()
+                .requestMatchers("/api/admin/delivery-boys/**").permitAll()
                 
                 // Image Upload endpoint (Admin only)
                 .requestMatchers("/api/upload/**").hasRole("ADMIN")
@@ -61,7 +65,7 @@ public class SecurityConfig {
                 // Admin endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
-                // User endpoints - authenticated
+                // User endpoints
                 .requestMatchers("/api/cart/**").authenticated()
                 .requestMatchers("/api/orders/**").authenticated()
                 .requestMatchers("/api/user/**").authenticated()
